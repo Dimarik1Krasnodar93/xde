@@ -3,7 +3,7 @@ package com.xde.model;
 import javax.persistence.*;
 
 @Entity
-@Table
+@Table (name = ("organization_box_count"))
 public class OrganizationBoxCount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
