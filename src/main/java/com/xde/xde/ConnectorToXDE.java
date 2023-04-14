@@ -9,12 +9,19 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
+/**
+ *Класс создает коннектор к сервису xDE
+ */
+public
 @Component
-public class ConnectorToXDE {
+ class ConnectorToXDE {
     private XDESettings xdeSettings;
     @Autowired
     private XDESettingsRepository xdeSettingsRepository;
 
+    /**
+     * Загрузка настроек из БД
+    * */
     @PostConstruct
     public void loadSettings() {
         List<XDESettings> list = xdeSettingsRepository.findAll();
@@ -23,7 +30,9 @@ public class ConnectorToXDE {
         }
     }
 
-
+    /**
+     *Получение входяших событий из xDE
+     */
     public List<Object> getEvents(String boxName) {
         return null;
     }

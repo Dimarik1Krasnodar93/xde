@@ -17,8 +17,4 @@ public class Input {
         return "";
     }
 
-    @GetMapping("/getData")
-    public Object getData2(){
-        return "";
-    }
 }
