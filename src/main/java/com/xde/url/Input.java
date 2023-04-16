@@ -5,16 +5,21 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.websocket.server.PathParam;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * Контроллеры для получения входящих данных из xDE
+ */
 @RestController
 @RequestMapping("/input")
 @AllArgsConstructor
 public class Input {
     InputService inputService;
-    @PostMapping("/getData/{id}")
+    @GetMapping("/getData/{id}")
     public Object getData(@PathVariable("id") int id){
-        inputService.getData(id);
-        return "";
+        List<Map> list = inputService.getData(id);
+        return list;
     }
 
 }

@@ -12,4 +12,5 @@
     <include file="scripts/input/terralink-mirit/002_insert_contractor_boxes.sql" relativeToChangelogFile="true"/>
     <include file="scripts/input/terralink-mirit/003_insert_organization_box_count.sql" relativeToChangelogFile="true"/>
     <include file="scripts/input/terralink-mirit/004_insert_settings.sql" relativeToChangelogFile="true"/>
+    <include file="scripts/input/terralink-mirit/005_update_settings.sql" relativeToChangelogFile="true"/>
 </databaseChangeLog>
