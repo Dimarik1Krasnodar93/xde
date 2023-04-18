@@ -1,22 +1,16 @@
 package com.xde.xde;
 
-import com.xde.httentity.Userxde;
 import com.xde.model.XDESettings;
 import com.xde.repository.XDESettingsRepository;
 import lombok.Getter;
-import org.apache.catalina.User;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +28,7 @@ import java.util.Map;
 
     private String urlToken;
     private String urlHistory;
-    private final int maxCountEvents = 100;
+    private static final int MAX_COUNT_EVENTS = 100;
    // public static final int TIMEOUT = 200;
 
     @Autowired
@@ -51,7 +45,6 @@ import java.util.Map;
         }
         loadPaths();
         updateToken(true);
-        getInputEvents("2");
     }
 
     private void loadPaths() {
@@ -82,15 +75,15 @@ import java.util.Map;
         }
     }
 
-    public List<Map> getInputEvents(String boxId) {
+    public List<Map> getInputEvents(String boxId, int lastMessage) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", bearerToken);
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("BoxId", "a3893aa4b53f498da38e440895bf4361@diadoc.ru");
-        jsonObject.put("MaxStatusesCount", 1000);
-        jsonObject.put("LastStatusId", 37798);
+        jsonObject.put("BoxId", boxId);
+        jsonObject.put("MaxStatusesCount", MAX_COUNT_EVENTS);
+        jsonObject.put("LastStatusId", lastMessage);
         HttpEntity<String> request =
                 new HttpEntity<>(jsonObject.toString(),
                         headers);
