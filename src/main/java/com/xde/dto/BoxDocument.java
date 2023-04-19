@@ -1,9 +1,11 @@
 package com.xde.dto;
 
 
+import com.xde.model.OrganizationBox;
+
 import java.util.Objects;
 
-public record BoxDocument(String boxId, String docId) {
+public record BoxDocument(OrganizationBox organizationBox, String docId) {
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -13,11 +15,11 @@ public record BoxDocument(String boxId, String docId) {
             return false;
         }
         BoxDocument that = (BoxDocument) o;
-        return Objects.equals(boxId, that.boxId) && Objects.equals(docId, that.docId);
+        return Objects.equals(organizationBox, that.organizationBox) && Objects.equals(docId, that.docId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(boxId, docId);
+        return Objects.hash(organizationBox, docId);
     }
 }

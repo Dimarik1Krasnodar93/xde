@@ -1,6 +1,7 @@
 package com.xde.xde;
 
 import com.xde.model.XDESettings;
+import com.xde.model.steps.Step;
 import com.xde.repository.XDESettingsRepository;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -22,17 +23,20 @@ import java.util.Map;
 @Component
 @Getter
  public class ConnectorToXDE {
+    private int processorsCount = 1;
     private XDESettings xdeSettings;
     private String token;
-    private String bearerToken;
+    private static String bearerToken;
+    private XDEContainer xdeContainer;
 
-    private String urlToken;
-    private String urlHistory;
-    private static final int MAX_COUNT_EVENTS = 100;
-   // public static final int TIMEOUT = 200;
+    public static final int MAX_COUNT_EVENTS = 100;
 
-    @Autowired
     private XDESettingsRepository xdeSettingsRepository;
+
+    public ConnectorToXDE(XDESettingsRepository xdeSettingsRepository) {
+        this.xdeSettingsRepository = xdeSettingsRepository;
+        xdeContainer = new XDEContainer(processorsCount, this);
+    }
 
     /**
      * Загрузка настроек из БД
@@ -48,8 +52,7 @@ import java.util.Map;
     }
 
     private void loadPaths() {
-        urlToken = xdeSettings.getUrl() + "/token";
-        urlHistory = xdeSettings.getUrl() + "/v3/statuses/history";
+        UrlQueries.setAllUrl(xdeSettings.getUrl());
     }
 
 
@@ -68,7 +71,7 @@ import java.util.Map;
             HttpEntity<String> request =
                     new HttpEntity<>(jsonObject.toString(),
                             headers);
-            Map<String, String> map = restTemplate.postForObject(urlToken,
+            Map<String, String> map = restTemplate.postForObject(UrlQueries.getUrlToken(),
                     request, HashMap.class);
             token = map.get("access_token");
             bearerToken = "Bearer " + token;
@@ -76,19 +79,37 @@ import java.util.Map;
     }
 
     public List<Map> getInputEvents(String boxId, int lastMessage) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("BoxId", boxId);
+        map.put("MaxStatusesCount", MAX_COUNT_EVENTS);
+        map.put("LastStatusId", lastMessage);
+        return (List<Map>) executeXdeQuery(map, UrlQueries.getUrlHistory(), List.class);
+    }
+
+    public void executeStep(Step step) {
+        if (!step.needToWaiting()) {
+            Map<String, Object> parameters = step.getParameters();
+            String result = (String) executeXdeQuery(parameters,
+                    step.getUrlRequest(), String.class);
+            step.incrementStep();
+        }
+    }
+    public <T> Object executeXdeQuery(Map<String, Object> map, String urlRequest, Class<T> className) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", bearerToken);
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("BoxId", boxId);
-        jsonObject.put("MaxStatusesCount", MAX_COUNT_EVENTS);
-        jsonObject.put("LastStatusId", lastMessage);
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            jsonObject.put(entry.getKey(), entry.getValue());
+        }
         HttpEntity<String> request =
                 new HttpEntity<>(jsonObject.toString(),
                         headers);
-        return restTemplate.postForObject(urlHistory,
-                request, List.class);
+        T result;
+        result = restTemplate.postForObject(urlRequest,
+                request, className);
+        return result;
     }
 
     /**

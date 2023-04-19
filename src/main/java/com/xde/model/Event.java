@@ -14,8 +14,9 @@ public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "box_id")
-    private String boxId;
+    @ManyToOne
+    @JoinColumn(name = "organization_box")
+    private OrganizationBox organizationBox;
     @Column(name = "doc_id")
     private String docId;
     private String status;
@@ -47,6 +48,8 @@ public class Event {
     private String certificateThumbprint;
     @Column(name = "warrant_proxy")
     private String warrantProxy;
+    @Column(name = "started_execution")
+    private boolean startedExecution;
 
     public boolean getPrintForm() {
         return printForm;

@@ -11,7 +11,10 @@ public class OrganizationBoxCountService {
     OrganizationBoxCountRepository organizationBoxCountRepository;
 
     public OrganizationBoxCount findById(int id) {
-
         return organizationBoxCountRepository.findById(id).orElseThrow();
+    }
+
+    public void save(OrganizationBoxCount organizationBoxCount) {
+        organizationBoxCountRepository.save(organizationBoxCount);
     }
 }

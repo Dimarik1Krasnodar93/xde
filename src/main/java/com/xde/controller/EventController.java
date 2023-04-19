@@ -1,24 +1,24 @@
 package com.xde.controller;
 
-import com.xde.service.InputService;
+import com.xde.service.EventService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Контроллеры для получения входящих данных из xDE
  */
 @RestController
-@RequestMapping("/input")
+@RequestMapping("/event")
 @AllArgsConstructor
-public class Input {
-    InputService inputService;
-    @GetMapping("/getData/{id}")
+public class EventController {
+    EventService eventService;
+    @PostMapping("/getEvents/{id}")
     public Object getData(@PathVariable("id") int id) {
-        List<Map> list = inputService.getEvents(id);
-        return list;
+        return eventService.getEvents(id);
+    }
+    @PostMapping("/approve")
+    public void approve() {
+            eventService.approveAll();
     }
 
 }

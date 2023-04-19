@@ -1,6 +1,7 @@
 package com.xde.model;
 
 import lombok.Getter;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 
@@ -19,6 +20,9 @@ public class OrganizationBox {
     private String operatorId;
     @Column(name = "fns_id")
     private String fnsId;
-
-
+    @Column
+    private String thumbprint;
+    @Column
+    @Type(type = "org.hibernate.type.TextType")
+    private String certificate;
 }

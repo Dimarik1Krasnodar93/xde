@@ -1,6 +1,7 @@
 package com.xde.model;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 
@@ -15,6 +16,7 @@ public class OrganizationBoxCount {
     @OneToOne
     @JoinColumn(name = "box_id")
     private OrganizationBox box;
+    @Setter
     private int count;
 
 }

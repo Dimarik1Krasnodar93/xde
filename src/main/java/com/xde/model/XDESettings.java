@@ -13,7 +13,6 @@ public class XDESettings {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
     private String url;
     private String login;
     private String password;
