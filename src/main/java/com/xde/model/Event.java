@@ -6,6 +6,9 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * События (пример - в 1с это входящие события)
+ * */
 @Getter
 @Setter
 @Entity

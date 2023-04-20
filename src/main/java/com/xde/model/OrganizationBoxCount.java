@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
+/**
+ * Ящики организаций + счетчик событий по ящику
+ * */
 @Entity
 @Table (name = ("organization_box_count"))
 @Getter

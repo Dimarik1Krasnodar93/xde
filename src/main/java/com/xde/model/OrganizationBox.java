@@ -5,6 +5,9 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 
+/**
+ * Ящики организаций
+ * */
 @Entity
 @Table(name = "organization_box")
 @Getter

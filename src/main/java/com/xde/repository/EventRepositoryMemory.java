@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Репозиторий событий в памяти
+ * */
 @Repository
 public class EventRepositoryMemory implements EventRepository {
     private int id = 0;

@@ -5,6 +5,9 @@ import com.xde.model.OrganizationBox;
 
 import java.util.Objects;
 
+/**
+ * Документ-id в разрезе ящиков организаций
+ * */
 public record BoxDocument(OrganizationBox organizationBox, String docId) {
     @Override
     public boolean equals(Object o) {

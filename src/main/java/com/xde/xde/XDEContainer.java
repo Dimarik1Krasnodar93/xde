@@ -7,9 +7,9 @@ import com.xde.model.steps.StepsApprove;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/*
-Класс содержит очереди для работы с событиями
-хранятся события в Map<Map>. Integer - сделано для разделения потоков
+/**
+*Класс содержит очереди для работы с событиями
+*хранятся события в Map<Map>. Integer - сделано для разделения потоков
 * */
 
 public class XDEContainer {
@@ -32,6 +32,7 @@ public class XDEContainer {
 
     public void addStepsApprove(int totalProcessors, List<Event> listEvent) {
         for (Event event : listEvent) {
+            event.setStartedExecution(true);
             List<Step> list = map.get(event.getEventId() % totalProcessors);
             list.add(new StepsApprove(true, event));
         }

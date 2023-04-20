@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
+/**
+ * Настройки xDE
+ * */
 @Entity
 @Table(name = "xde_settings")
 @Getter

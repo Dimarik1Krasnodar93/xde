@@ -1,5 +1,6 @@
 package com.xde.model.steps;
 
+import com.xde.dto.TypeHttp;
 import com.xde.model.Event;
 import com.xde.model.OrganizationBox;
 import com.xde.xde.ConnectorToXDE;
@@ -7,6 +8,9 @@ import com.xde.xde.UrlQueries;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -54,17 +58,20 @@ public class StepsApprove implements Step {
 
 
     public String getUrlRequest() {
-        if (step == 1) {
-            return approve ? UrlQueries.getUrlGetTitleOrReceiptAccept()
-                    : UrlQueries.getUrlGetTitleOrReceiptReject();
-        } else {
-            return "";
+        switch (step) {
+            case 1:
+                return approve ? UrlQueries.getUrlGetTitleOrReceiptAccept()
+                        : UrlQueries.getUrlGetTitleOrReceiptReject();
+            case 2: return approve ? UrlQueries.getUrlGetLinkForContentAccept() + result
+                    : UrlQueries.getUrlGetLinkForContentReject() + result;
+            default: return "";
         }
+
     }
 
     @Override
     public void incrementStep() {
-        if (++step > TOTAL_STEPS) {
+        if (!fatalException && ++step > TOTAL_STEPS) {
             done = true;
         }
     }
@@ -72,13 +79,19 @@ public class StepsApprove implements Step {
     public Map<String, Object> getParameters() {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> acceptanceResult = new HashMap<>();
-        acceptanceResult.put("AcceptanceResultType", 1);
-        acceptanceResult.put("DocumentId", event.getDocId());
-        map.put("AcceptanceResult", acceptanceResult);
-        map.put("DocumentId", event.getDocId());
-        OrganizationBox organizationBox = event.getOrganizationBox();
-        map.put("Certificate", organizationBox.getCertificate());
-        map.put("Thumbprint", organizationBox.getThumbprint());
+        switch (step) {
+        case 1:
+            acceptanceResult.put("AcceptanceResultType", 1);
+            acceptanceResult.put("DocumentId", event.getDocId());
+            map.put("AcceptanceResult", acceptanceResult);
+            map.put("DocumentId", event.getDocId());
+            OrganizationBox organizationBox = event.getOrganizationBox();
+            map.put("Certificate", organizationBox.getCertificate());
+            map.put("Thumbprint", organizationBox.getThumbprint());
+        break;
+            case 2: break;
+
+        }
         return map;
     }
 
@@ -89,7 +102,29 @@ public class StepsApprove implements Step {
     }
 
     @Override
+    public HttpMethod getHttpMethod() {
+        switch (step) {
+            case 1: return HttpMethod.POST;
+            case 2: return HttpMethod.GET;
+            default: return HttpMethod.POST;
+        }
+    }
+    @Override
     public boolean getDone() {
         return done;
+    }
+
+    @Override
+    public void updateResultFromResponseEntity(ResponseEntity<String> responseEntity) {
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            if (step == 1) {
+                result = responseEntity.getBody();
+                fatalException = false;
+                exceptionMessage = "";
+            }
+        } else {
+            fatalException = true;
+            exceptionMessage = responseEntity.getBody();
+        }
     }
 }

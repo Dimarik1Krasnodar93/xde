@@ -2,6 +2,9 @@ package com.xde.model;
 
 import javax.persistence.*;
 
+/**
+ * Ящики контрагентов
+ * */
 @Entity
 @Table(name = "contractor_box")
 public class ContractorBox {

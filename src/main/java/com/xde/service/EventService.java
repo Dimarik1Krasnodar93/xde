@@ -5,10 +5,9 @@ import com.xde.handlers.EventHandler;
 import com.xde.model.Event;
 import com.xde.model.OrganizationBox;
 import com.xde.model.OrganizationBoxCount;
-import com.xde.model.steps.Step;
 import com.xde.repository.EventRepository;
-import com.xde.threads.ThreadContainer;
-import com.xde.threads.ThreadRemoveSteps;
+import com.xde.threads.runnableThreads.ThreadContainer;
+import com.xde.threads.runnableThreads.ThreadRemoveSteps;
 import com.xde.xde.ConnectorToXDE;
 import com.xde.xde.XDEContainer;
 import lombok.AllArgsConstructor;
@@ -17,27 +16,31 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+/**
+ * Сервис событий
+ * */
 @Service
 @AllArgsConstructor
 public class EventService {
     private ConnectorToXDE connectorToXDE;
     private OrganizationBoxCountService organizationBoxCountService;
     private EventRepository eventRepository;
+    private static int MAX_THREAD_INPUT = 3;
 
     private static Logger logger = LoggerFactory.getLogger(EventService.class);
 
 
     public String getEvents(int id) {
+        long timeStart = System.currentTimeMillis();
         OrganizationBoxCount organizationBoxCount = organizationBoxCountService.findById(id);
         String boxId = organizationBoxCount.getBox().getName();
         int lastMessage = organizationBoxCount.getCount();
-        List<Map> list = connectorToXDE.getInputEvents(boxId, lastMessage);
-        int maxEvent = saveAllFromXDE(list, organizationBoxCount.getBox());
+        Set<Map> set = connectorToXDE.getInputEvents(boxId, lastMessage);
+        long timeEnd = System.currentTimeMillis();
+        logger.info("___time2 : " + (timeEnd - timeStart));
+        int maxEvent = saveAllFromXDE(set, organizationBoxCount.getBox());
         organizationBoxCount.setCount(maxEvent);
         organizationBoxCount.setCount(42352);
         organizationBoxCountService.save(organizationBoxCount);
@@ -48,7 +51,14 @@ public class EventService {
         ThreadRemoveSteps[] threadRemoveSteps = new ThreadRemoveSteps[connectorToXDE.getProcessorsCount()];
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
             threadRemoveSteps[i] = new ThreadRemoveSteps(xdeContainer, i);
-            threadRemoveSteps[i].run();
+            threadRemoveSteps[i].start();
+        }
+        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
+            try {
+                threadRemoveSteps[i].join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
         List<Event> listApprove = eventRepository.getAllToExecute();
         ThreadContainer[] threadContainers = new ThreadContainer[connectorToXDE.getProcessorsCount()];
@@ -56,15 +66,22 @@ public class EventService {
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
             threadContainers[i] = new ThreadContainer(xdeContainer,
                     i);
-            threadContainers[i].run();
+            threadContainers[i].start();
+        }
+        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
+            try {
+                threadContainers[i].join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }
-    private int saveAllFromXDE(List<Map> list, OrganizationBox organizationBox) {
+    private int saveAllFromXDE(Set<Map> set, OrganizationBox organizationBox) {
         int result = 0;
         int i = 0;
         List<Event> eventList = new ArrayList<>(ConnectorToXDE.MAX_COUNT_EVENTS);
-        for (Map map : list) {
+        for (Map map : set) {
             logger.info("______Start to parse " + i++);
             Event event = new Event();
             Map<String, Object> mapEvent = (Map) map.get("Event");

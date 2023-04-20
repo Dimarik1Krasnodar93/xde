@@ -1,6 +1,12 @@
 package com.xde.handlers;
 
+/**
+ * обработчики событий
+ * */
 public class EventHandler {
+    /**
+     * Получить приоритет события (для оптимизации)
+     * */
     public static int getPriority(String status) {
         switch (status) {
             case "S": return 0;
