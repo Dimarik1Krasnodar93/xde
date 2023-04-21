@@ -12,9 +12,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import javax.persistence.*;
+import javax.print.attribute.standard.Media;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,6 +81,7 @@ public class StepsApprove implements Step {
     }
 
     public Map<String, Object> getParameters() {
+        OrganizationBox organizationBox = event.getOrganizationBox();
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> acceptanceResult = new HashMap<>();
         switch (step) {
@@ -87,12 +90,15 @@ public class StepsApprove implements Step {
             acceptanceResult.put("DocumentId", event.getDocId());
             map.put("AcceptanceResult", acceptanceResult);
             map.put("DocumentId", event.getDocId());
-            OrganizationBox organizationBox = event.getOrganizationBox();
+
             map.put("Certificate", organizationBox.getCertificate());
             map.put("Thumbprint", organizationBox.getThumbprint());
         break;
             case 2: break;
-
+            case 3:
+                map.put("Thumbprint", organizationBox.getThumbprint());
+                map.put("ThrowOnErrors", true);
+                map.put("Contents", null); //ДанныеНаПодписаниеМассив.Добавить(Base64Строка(ДанныеДляПодписания));
         }
         return map;
     }
@@ -133,5 +139,10 @@ public class StepsApprove implements Step {
             fatalException = true;
             exceptionMessage = responseEntity.getBody();
         }
+    }
+
+    @Override
+    public MediaType getContentType() {
+        return MediaType.APPLICATION_JSON;
     }
 }

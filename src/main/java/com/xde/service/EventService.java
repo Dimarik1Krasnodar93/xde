@@ -40,6 +40,7 @@ public class EventService {
         Set<Map> set = connectorToXDE.getInputEvents(boxId, lastMessage);
         long timeEnd = System.currentTimeMillis();
         logger.info("___time2 : " + (timeEnd - timeStart));
+        //вместо сохранения преобразовать в коллекцию, определить максимум и в многопоточке загрузить архивы
         int maxEvent = saveAllFromXDE(set, organizationBoxCount.getBox());
         organizationBoxCount.setCount(maxEvent);
         organizationBoxCount.setCount(42352);

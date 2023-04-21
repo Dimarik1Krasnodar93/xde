@@ -55,6 +55,7 @@ import java.util.Set;
 
     private void loadPaths() {
         UrlQueries.setAllUrl(xdeSettings.getUrl());
+        UrlQueries.setAllCryptoUrl(xdeSettings.getUrlCrypto());
     }
 
 
@@ -85,7 +86,7 @@ import java.util.Set;
         map.put("BoxId", boxId);
         map.put("MaxStatusesCount", MAX_COUNT_EVENTS);
         map.put("LastStatusId", lastMessage);
-        ResponseEntity<Set> responseEntity = executeXdeQuery(HttpMethod.POST, map, UrlQueries.getUrlHistory(), Set.class);
+        ResponseEntity<Set> responseEntity = executeXdeQuery(HttpMethod.POST, MediaType.APPLICATION_JSON, map, UrlQueries.getUrlHistory(), Set.class);
         return (Set<Map>) responseEntity.getBody();
     }
 
@@ -93,13 +94,15 @@ import java.util.Set;
         if (!step.needToWaiting()) {
             Map<String, Object> parameters = step.getParameters();
             HttpMethod httpMethod = step.getHttpMethod();
-            ResponseEntity<String> responseEntity = executeXdeQuery(httpMethod, parameters,
+            MediaType mediaType = step.getContentType();
+            ResponseEntity<String> responseEntity = executeXdeQuery(httpMethod, mediaType, parameters,
                     step.getUrlRequest(), String.class);
             step.updateResultFromResponseEntity(responseEntity);
             step.incrementStep();
         }
     }
-    public <T> ResponseEntity<T>  executeXdeQuery(HttpMethod httpMethod, Map<String, Object> map, String urlRequest, Class<T> className) {
+    public <T> ResponseEntity<T>  executeXdeQuery(HttpMethod httpMethod, MediaType contentType,
+                                                  Map<String, Object> map, String urlRequest, Class<T> className) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -120,12 +123,4 @@ import java.util.Set;
         ResponseEntity<T> responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, className);
         return responseEntity;
     }
-
-    /**
-     *Получение входяших событий из xDE
-     */
-    public List<Object> getEvents(String boxName) {
-        return null;
-    }
-
 }

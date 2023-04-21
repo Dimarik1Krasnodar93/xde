@@ -54,6 +54,8 @@ public class Event {
     @Column(name = "started_execution")
     private boolean startedExecution;
 
+    private byte[] data;
+
     public boolean getPrintForm() {
         return printForm;
     }

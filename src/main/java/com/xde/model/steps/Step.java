@@ -1,6 +1,7 @@
 package com.xde.model.steps;
 
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
@@ -14,6 +15,7 @@ public interface Step {
     void incrementStep();
     boolean getDone();
     HttpMethod getHttpMethod();
+    MediaType getContentType();
 
 
     void updateResultFromResponseEntity(ResponseEntity<String> responseEntity);

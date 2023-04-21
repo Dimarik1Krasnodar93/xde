@@ -19,4 +19,6 @@ public class XDESettings {
     private String url;
     private String login;
     private String password;
+    @Column(name = "url_crypto")
+    private String urlCrypto;
 }

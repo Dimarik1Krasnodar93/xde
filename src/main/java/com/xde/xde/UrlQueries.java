@@ -16,6 +16,8 @@ public class UrlQueries {
     private static String urlGetLinkForContentAccept;
     private static String urlGetLinkForContentReject;
 
+    private static String urlSign;
+
     public static void setAllUrl(String mainUrl) {
         urlToken = mainUrl + "/token";
         urlHistory = mainUrl + "/v3/statuses/history";
@@ -23,6 +25,9 @@ public class UrlQueries {
         urlGetTitleOrReceiptReject = mainUrl + "/document/reject/content";
         urlGetLinkForContentAccept = mainUrl + "/v2/document/accept/content/tasks/";
         urlGetLinkForContentReject = mainUrl + "/v2/document/reject/content/tasks/";
+    }
+    public static void setAllCryptoUrl(String mainUrl) {
+        urlSign = mainUrl + "/v2/sign/";
     }
 
     public static String getUrlToken() {

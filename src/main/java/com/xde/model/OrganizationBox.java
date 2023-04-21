@@ -25,6 +25,8 @@ public class OrganizationBox {
     private String fnsId;
     @Column
     private String thumbprint;
+    @Column(name = "thumbprint_server")
+    private String thumbprintServer;
     @Column
     @Type(type = "org.hibernate.type.TextType")
     private String certificate;
