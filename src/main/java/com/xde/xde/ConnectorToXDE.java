@@ -117,7 +117,6 @@ import java.util.Set;
             request =
                     new HttpEntity<>(headers);
         }
-
         ResponseEntity<T> responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, className);
         return responseEntity;
     }

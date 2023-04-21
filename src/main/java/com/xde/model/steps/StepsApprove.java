@@ -8,6 +8,8 @@ import com.xde.xde.UrlQueries;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -121,6 +123,11 @@ public class StepsApprove implements Step {
                 result = responseEntity.getBody();
                 fatalException = false;
                 exceptionMessage = "";
+            }
+            if (step == 2) {
+                JSONObject jsonObjectEntity = new JSONObject(responseEntity.getBody());
+                result = "";
+                result = (String) ((JSONObject)((JSONArray)jsonObjectEntity.get("Results")).get(0)).get("ContentLinkId");
             }
         } else {
             fatalException = true;
