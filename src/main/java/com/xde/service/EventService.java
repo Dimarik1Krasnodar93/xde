@@ -7,6 +7,7 @@ import com.xde.model.OrganizationBox;
 import com.xde.model.OrganizationBoxCount;
 import com.xde.repository.EventRepository;
 import com.xde.threads.runnableThreads.ThreadContainer;
+import com.xde.threads.runnableThreads.ThreadLoaderArchive;
 import com.xde.threads.runnableThreads.ThreadRemoveSteps;
 import com.xde.xde.ConnectorToXDE;
 import com.xde.xde.XDEContainer;
@@ -31,7 +32,6 @@ public class EventService {
 
     private static Logger logger = LoggerFactory.getLogger(EventService.class);
 
-
     public String getEvents(int id) {
         long timeStart = System.currentTimeMillis();
         OrganizationBoxCount organizationBoxCount = organizationBoxCountService.findById(id);
@@ -46,6 +46,22 @@ public class EventService {
         organizationBoxCount.setCount(42352);
         organizationBoxCountService.save(organizationBoxCount);
         return "ok";
+    }
+
+    public void loadArchive() {
+        List<Event> eventList = eventRepository.findAllInIAndNullData();
+        ThreadLoaderArchive[] threadLoaderArchives = new ThreadLoaderArchive[connectorToXDE.getProcessorsCount()];
+        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
+            threadLoaderArchives[i] = new ThreadLoaderArchive(connectorToXDE.getXdeContainer(), i, eventList);
+            threadLoaderArchives[i].start();
+        }
+        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
+            try {
+                threadLoaderArchives[i].join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
     public void approveAll() {
         XDEContainer xdeContainer = connectorToXDE.getXdeContainer();

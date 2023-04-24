@@ -15,6 +15,7 @@ public class UrlQueries {
     private static String urlGetTitleOrReceiptReject;
     private static String urlGetLinkForContentAccept;
     private static String urlGetLinkForContentReject;
+    private static String urlGetArchive;
 
     private static String urlSign;
 
@@ -25,11 +26,14 @@ public class UrlQueries {
         urlGetTitleOrReceiptReject = mainUrl + "/document/reject/content";
         urlGetLinkForContentAccept = mainUrl + "/v2/document/accept/content/tasks/";
         urlGetLinkForContentReject = mainUrl + "/v2/document/reject/content/tasks/";
+
     }
     public static void setAllCryptoUrl(String mainUrl) {
         urlSign = mainUrl + "/v2/sign/";
     }
-
+    public static void setArchiveUrl(String mainUrl) {
+        urlGetArchive = mainUrl + "/archive/";
+    }
     public static String getUrlToken() {
         return urlToken;
     }
@@ -52,5 +56,13 @@ public class UrlQueries {
 
     public static String getUrlGetLinkForContentReject() {
         return urlGetLinkForContentReject;
+    }
+
+    public static String getUrlGetArchive() {
+        return urlGetArchive;
+    }
+
+    public static String getUrlSign() {
+        return urlSign;
     }
 }

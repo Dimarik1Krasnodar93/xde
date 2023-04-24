@@ -14,8 +14,16 @@ public class EventController {
     EventService eventService;
     @PostMapping("/getEvents/{id}")
     public Object getData(@PathVariable("id") int id) {
-        return eventService.getEvents(id);
+        eventService.getEvents(id);
+        return "getData: ok";
     }
+
+    @PostMapping("/archive")
+    public Object loadArchive() {
+        eventService.loadArchive();
+        return "loadArchive: ok";
+    }
+
     @PostMapping("/approve")
     public void approve() {
             eventService.approveAll();

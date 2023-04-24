@@ -21,4 +21,6 @@ public class XDESettings {
     private String password;
     @Column(name = "url_crypto")
     private String urlCrypto;
+    @Column(name = "url_archive")
+    private String urlArchive;
 }

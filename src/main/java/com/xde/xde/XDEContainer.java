@@ -3,7 +3,12 @@ package com.xde.xde;
 import com.xde.model.Event;
 import com.xde.model.steps.Step;
 import com.xde.model.steps.StepsApprove;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
+import javax.print.attribute.standard.Media;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -50,5 +55,14 @@ public class XDEContainer {
             }
         }
     }
+
+    public void loadArchiveAllEvents(int processor, List<Event> eventList) {
+        for (int i = processor; i < eventList.size(); i += connectorToXDE.getProcessorsCount()) {
+            Event event = eventList.get(i);
+            String archive = connectorToXDE.getEventArchive(event);
+            event.setData(archive.getBytes());
+        }
+    }
+
 
 }

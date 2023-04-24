@@ -1,0 +1,1 @@
+UPDATE xde_settings set url_archive = 'http://xde-tl-1c-dev1.xde.dev.local:9002';

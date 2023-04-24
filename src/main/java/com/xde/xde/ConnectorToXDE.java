@@ -1,6 +1,7 @@
 package com.xde.xde;
 
 import com.xde.dto.TypeHttp;
+import com.xde.model.Event;
 import com.xde.model.XDESettings;
 import com.xde.model.steps.Step;
 import com.xde.repository.XDESettingsRepository;
@@ -12,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,7 @@ import java.util.Set;
     private void loadPaths() {
         UrlQueries.setAllUrl(xdeSettings.getUrl());
         UrlQueries.setAllCryptoUrl(xdeSettings.getUrlCrypto());
+        UrlQueries.setArchiveUrl(xdeSettings.getUrlArchive());
     }
 
 
@@ -122,5 +125,13 @@ import java.util.Set;
         }
         ResponseEntity<T> responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, className);
         return responseEntity;
+    }
+
+    public String getEventArchive(Event event) {
+
+        ResponseEntity<String> result = executeXdeQuery(HttpMethod.GET, MediaType.APPLICATION_OCTET_STREAM, new HashMap<>(),
+                UrlQueries.getUrlGetArchive() + event.getLinkArchive(), String.class);
+        String data =  result.getBody();
+        return data;
     }
 }
