@@ -17,6 +17,6 @@ public interface Step {
     HttpMethod getHttpMethod();
     MediaType getContentType();
 
-
+    void setError(String message);
     void updateResultFromResponseEntity(ResponseEntity<String> responseEntity);
 }

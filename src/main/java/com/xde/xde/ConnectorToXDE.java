@@ -98,10 +98,21 @@ import java.util.Set;
             Map<String, Object> parameters = step.getParameters();
             HttpMethod httpMethod = step.getHttpMethod();
             MediaType mediaType = step.getContentType();
-            ResponseEntity<String> responseEntity = executeXdeQuery(httpMethod, mediaType, parameters,
-                    step.getUrlRequest(), String.class);
-            step.updateResultFromResponseEntity(responseEntity);
-            step.incrementStep();
+            ResponseEntity<String> responseEntity = null;
+            try {
+                responseEntity = executeXdeQuery(httpMethod, mediaType, parameters,
+                        step.getUrlRequest(), String.class);
+                if (responseEntity.getStatusCode() == HttpStatus.OK
+                        && !responseEntity.getBody().contains("\"Results\":null")) {
+                    step.updateResultFromResponseEntity(responseEntity);
+                    step.incrementStep();
+                } else {
+                    step.setError(responseEntity.getStatusCode().toString());
+                }
+            } catch (Exception ex) {
+                step.setError(responseEntity.getStatusCode() + " " + ex.getMessage());
+            }
+
         }
     }
     public <T> ResponseEntity<T>  executeXdeQuery(HttpMethod httpMethod, MediaType contentType,
@@ -110,6 +121,7 @@ import java.util.Set;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", bearerToken);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());//????? убрать??
         HttpEntity<String> request;
         JSONObject jsonObject = new JSONObject();
         if (!map.isEmpty()) {
