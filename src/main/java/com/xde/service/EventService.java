@@ -35,7 +35,7 @@ public class EventService {
     public String getEvents(int id) {
         long timeStart = System.currentTimeMillis();
         OrganizationBoxCount organizationBoxCount = organizationBoxCountService.findById(id);
-        final int valueConst = 44435; //временно для отладки - удалить в дальнейшем
+        final int valueConst = 44453; //временно для отладки - удалить в дальнейшем
         organizationBoxCountService.save(organizationBoxCount); //временно для отладки  - удалить в дальнейшем
         String boxId = organizationBoxCount.getBox().getName();
         int lastMessage = organizationBoxCount.getCount();
