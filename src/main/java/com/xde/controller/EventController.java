@@ -1,6 +1,8 @@
 package com.xde.controller;
 
 import com.xde.service.EventService;
+import com.xde.threads.runnableThreads.ThreadApproveAll;
+import com.xde.threads.runnableThreads.ThreadGetEvents;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,4 +31,11 @@ public class EventController {
             eventService.approveAll();
     }
 
+    @PostMapping("/getAllAndApprove/{id}")
+    public void getAndApprove(@PathVariable("id") int id) throws InterruptedException {
+        Thread threadGetEvents = new ThreadGetEvents(eventService, id);
+        Thread threadApproveAll = new ThreadApproveAll(eventService);
+        threadGetEvents.start();
+        threadApproveAll.start();
+    }
 }

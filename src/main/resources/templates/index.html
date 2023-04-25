@@ -15,6 +15,9 @@
     <form th:action="@{|/event/approve|}" method="POST" >
         <button type="submit">Утвердить события</button>
     </form>
+    <form th:action="@{|/event/getAllAndApprove/2|}" method="POST" >
+        <button type="submit">Получить и утвердить все события</button>
+    </form>
 </div>
 </body>
 </html>

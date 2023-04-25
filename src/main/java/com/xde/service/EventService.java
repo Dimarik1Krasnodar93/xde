@@ -96,6 +96,11 @@ public class EventService {
         }
 
     }
+
+    public boolean needWork() {
+        return eventRepository.getAllToExecute().size() > 0
+                || connectorToXDE.getXdeContainer().stepsAreWorking();
+    }
     private int saveAllFromXDE(Set<Map> set, OrganizationBox organizationBox) {
         int result = 0;
         int i = 0;
