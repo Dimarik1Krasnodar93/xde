@@ -1,5 +1,6 @@
 package com.xde.model.steps;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ public interface Step {
     boolean getDone();
     HttpMethod getHttpMethod();
     MediaType getContentType();
-
+    HttpHeaders getHeaders();
     void setError(String message);
     void updateResultFromResponseEntity(ResponseEntity<String> responseEntity);
 }

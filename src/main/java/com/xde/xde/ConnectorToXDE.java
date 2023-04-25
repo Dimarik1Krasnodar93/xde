@@ -1,5 +1,6 @@
 package com.xde.xde;
 
+import com.sun.net.httpserver.Headers;
 import com.xde.dto.TypeHttp;
 import com.xde.model.Event;
 import com.xde.model.XDESettings;
@@ -89,19 +90,25 @@ import java.util.Set;
         map.put("BoxId", boxId);
         map.put("MaxStatusesCount", MAX_COUNT_EVENTS);
         map.put("LastStatusId", lastMessage);
-        ResponseEntity<Set> responseEntity = executeXdeQuery(HttpMethod.POST, MediaType.APPLICATION_JSON, map, UrlQueries.getUrlHistory(), Set.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", bearerToken);
+        ResponseEntity<Set> responseEntity = executeXdeQuery(HttpMethod.POST, headers, map,
+                UrlQueries.getUrlHistory(), Set.class, String.class);
         return (Set<Map>) responseEntity.getBody();
     }
 
     public void executeStep(Step step) {
-        if (!step.needToWaiting()) {
+        if (!step.needToWaiting() && !step.getDone()) {
             Map<String, Object> parameters = step.getParameters();
             HttpMethod httpMethod = step.getHttpMethod();
-            MediaType mediaType = step.getContentType();
+            HttpHeaders headers = step.getHeaders();
+            headers.add("Authorization", bearerToken);
             ResponseEntity<String> responseEntity = null;
             try {
-                responseEntity = executeXdeQuery(httpMethod, mediaType, parameters,
-                        step.getUrlRequest(), String.class);
+                Class requestClass = parameters.containsKey("body") ? byte[].class : String.class;
+                responseEntity = executeXdeQuery(httpMethod, headers, parameters,
+                        step.getUrlRequest(), String.class, requestClass);
                 if (responseEntity.getStatusCode() == HttpStatus.OK
                         && !responseEntity.getBody().contains("\"Results\":null")) {
                     step.updateResultFromResponseEntity(responseEntity);
@@ -115,34 +122,37 @@ import java.util.Set;
 
         }
     }
-    public <T> ResponseEntity<T>  executeXdeQuery(HttpMethod httpMethod, MediaType contentType,
-                                                  Map<String, Object> map, String urlRequest, Class<T> className) {
+
+    public <T, Y> ResponseEntity<T>  executeXdeQuery(HttpMethod httpMethod, HttpHeaders headers,
+                                                   Map<String, Object> map, String urlRequest,
+                                                  Class<T> classNameResponse, Class<Y> classNameRequest) {
         RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("Authorization", bearerToken);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());//????? убрать??
-        HttpEntity<String> request;
+        HttpEntity<Y> request;
         JSONObject jsonObject = new JSONObject();
         if (!map.isEmpty()) {
-            for (Map.Entry<String, Object> entry : map.entrySet()) {
-                jsonObject.put(entry.getKey(), entry.getValue());
+            if (map.containsKey("body")) {
+                request = new HttpEntity<>((Y) map.get("body"), headers);
+            } else {
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    jsonObject.put(entry.getKey(), entry.getValue());
+                }
+                request =
+                        new HttpEntity<>((Y) jsonObject.toString(),
+                                headers);
             }
-            request =
-                    new HttpEntity<>(jsonObject.toString(),
-                            headers);
         } else {
             request =
                     new HttpEntity<>(headers);
         }
-        ResponseEntity<T> responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, className);
+        ResponseEntity<T> responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, classNameResponse);
         return responseEntity;
     }
 
     public String getEventArchive(Event event) {
-
-        ResponseEntity<String> result = executeXdeQuery(HttpMethod.GET, MediaType.APPLICATION_OCTET_STREAM, new HashMap<>(),
-                UrlQueries.getUrlGetArchive() + event.getLinkArchive(), String.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        ResponseEntity<String> result = executeXdeQuery(HttpMethod.GET, headers, new HashMap<>(),
+                UrlQueries.getUrlGetArchive() + event.getLinkArchive(), String.class, String.class);
         String data =  result.getBody();
         return data;
     }

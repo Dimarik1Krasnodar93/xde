@@ -19,6 +19,9 @@ public class UrlQueries {
 
     private static String urlSign;
 
+    private static String urlDocumentsLocalAccept;
+    private static String urlDocumentsLocalReject;
+
     public static void setAllUrl(String mainUrl) {
         urlToken = mainUrl + "/token";
         urlHistory = mainUrl + "/v3/statuses/history";
@@ -26,6 +29,8 @@ public class UrlQueries {
         urlGetTitleOrReceiptReject = mainUrl + "/document/reject/content";
         urlGetLinkForContentAccept = mainUrl + "/v2/document/accept/content/tasks/";
         urlGetLinkForContentReject = mainUrl + "/v2/document/reject/content/tasks/";
+        urlDocumentsLocalAccept = mainUrl + "/documents/accept/local";
+        urlDocumentsLocalReject = mainUrl + "/documents/reject/local";
 
     }
     public static void setAllCryptoUrl(String mainUrl) {
@@ -64,5 +69,13 @@ public class UrlQueries {
 
     public static String getUrlSign() {
         return urlSign;
+    }
+
+    public static String getUrlDocumentsLocalAccept() {
+        return urlDocumentsLocalAccept;
+    }
+
+    public static String getUrlDocumentsLocalReject() {
+        return urlDocumentsLocalReject;
     }
 }

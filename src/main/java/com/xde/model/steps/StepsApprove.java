@@ -10,13 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 
 import javax.persistence.*;
-import javax.print.attribute.standard.Media;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
@@ -35,11 +31,12 @@ import java.util.Map;
  * 3 - ОбменСШинойЭДОЭлектронныйДокументШагПрочитатьИзАрхива
  * 4 - Подписать на сервере xDE
  * 5 - Записать в архив
+ * 6 - Завершение - операция по типу
  */
 @NoArgsConstructor
 public class StepsApprove implements Step {
     public static final int SECONDS_IGNORE = 1;
-    public static final int TOTAL_STEPS = 5;
+    public static final int TOTAL_STEPS = 6;
     public static final int ATTACHMENT_SIGN = 14;
 
     @Id
@@ -52,6 +49,12 @@ public class StepsApprove implements Step {
     private int step;
     private String result;
     private String sign;
+    @Column(name = "content_link")
+    private String contentLink;
+    @Column(name = "signature_link")
+    private String signatureLink;
+    @Column (name = "content_length")
+    private int contentLength;
     private boolean fatalException;
     private String exceptionMessage;
     private boolean done;
@@ -75,6 +78,8 @@ public class StepsApprove implements Step {
             case 3: return UrlQueries.getUrlGetArchive() + result;
             case 4: return UrlQueries.getUrlSign();
             case 5: return UrlQueries.getUrlGetArchive();
+            case 6: return approve ? UrlQueries.getUrlDocumentsLocalAccept()
+                    : UrlQueries.getUrlDocumentsLocalReject();
             default: return "";
         }
 
@@ -113,8 +118,9 @@ public class StepsApprove implements Step {
                 jsonObject.put("FileName", event.getFileName() + ".SGN");
                 jsonObject.put("AttachmentType", ATTACHMENT_SIGN);
                 jsonObject.put("DocumentId", event.getDocId());
-                String delimiter =  "--" + event.getDocId() + event.getEventId() + "--";
+                String delimiter =  getDelimiter();
                 StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("--");
                 stringBuilder.append(delimiter);
                 stringBuilder.append(System.lineSeparator());
                 stringBuilder.append("Content-Disposition: form-data; name=\"json\"");
@@ -122,22 +128,37 @@ public class StepsApprove implements Step {
                 stringBuilder.append(System.lineSeparator());
                 stringBuilder.append(jsonObject);
                 stringBuilder.append(System.lineSeparator());
+                stringBuilder.append("--");
                 stringBuilder.append(delimiter);
                 stringBuilder.append(System.lineSeparator());
                 stringBuilder.append("Content-Disposition: form-data; name=\"content\"; filename=\"");
                 stringBuilder.append(event.getFileName());
-                stringBuilder.append(".SGN\"");
+                stringBuilder.append(".SGN.SGN\"");
+                stringBuilder.append(System.lineSeparator());
                 stringBuilder.append(System.lineSeparator());
                 stringBuilder.append(result);
                 stringBuilder.append(System.lineSeparator());
+                stringBuilder.append("--");
                 stringBuilder.append(delimiter);
-                map.put("body", stringBuilder.toString());
-
+                stringBuilder.append("--");
+                byte[] bytes = stringBuilder.toString().getBytes();
+                map.put("body", bytes);
+                contentLength = bytes.length;
                 break;
+            case 6:
+                JSONObject jsonObjectMap = new JSONObject();
+                jsonObjectMap.put("DocumentId", event.getDocId());
+                jsonObjectMap.put("name", event.getFileName());
+                jsonObjectMap.put("ContentLinkId", contentLink);
+                jsonObjectMap.put("SignatureLinkId", signatureLink);
+                map.put("SignedTitlesOrReceipts", new JSONObject[] {jsonObjectMap});
         }
         return map;
     }
 
+    private String getDelimiter() {
+        return "46c46a9e342348cfad0e870ab34b81f1";
+    }
     @Override
     public boolean needToWaiting() {
         return LocalDateTime.now()
@@ -152,6 +173,7 @@ public class StepsApprove implements Step {
             case 3: return HttpMethod.GET;
             case 4: return HttpMethod.POST;
             case 5: return HttpMethod.POST;
+            case 6: return HttpMethod.POST;
             default: return HttpMethod.POST;
         }
     }
@@ -172,6 +194,7 @@ public class StepsApprove implements Step {
                 JSONObject jsonObjectEntity = new JSONObject(responseEntity.getBody());
                 result = "";
                 result = (String) ((JSONObject)((JSONArray)jsonObjectEntity.get("Results")).get(0)).get("ContentLinkId");
+                contentLink = result;
             }
             if (step == 3) {
                 sign = responseEntity.getBody();
@@ -184,6 +207,10 @@ public class StepsApprove implements Step {
                 JSONObject jsonObject = new JSONObject(result);
                 result = (String) jsonObject.get("Result");
                 result = new String(Base64.getDecoder().decode(result));
+            }
+            if (step == 5) {
+                result = responseEntity.getBody();
+                signatureLink = result;
             }
         } else {
             fatalException = true;
@@ -198,6 +225,29 @@ public class StepsApprove implements Step {
             case 3: return MediaType.APPLICATION_OCTET_STREAM;
             default: return MediaType.APPLICATION_JSON;
         }
+    }
+
+    @Override
+    public HttpHeaders getHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        switch (step) {
+            case 3:
+                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                break;
+            case 4:
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+                break;
+            case 5:
+                headers.add("accept", "text/plain");
+                headers.add("Content-Type", "multipart/form-data; boundary=" + getDelimiter());
+                headers.add("Content-Length", String.valueOf(contentLength));
+                break;
+            default:
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        }
+        return headers;
     }
 
     @Override

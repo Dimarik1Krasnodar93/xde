@@ -3,12 +3,6 @@ package com.xde.xde;
 import com.xde.model.Event;
 import com.xde.model.steps.Step;
 import com.xde.model.steps.StepsApprove;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-
-import javax.print.attribute.standard.Media;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -63,6 +57,4 @@ public class XDEContainer {
             event.setData(archive.getBytes());
         }
     }
-
-
 }

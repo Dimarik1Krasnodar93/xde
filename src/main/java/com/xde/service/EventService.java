@@ -35,6 +35,8 @@ public class EventService {
     public String getEvents(int id) {
         long timeStart = System.currentTimeMillis();
         OrganizationBoxCount organizationBoxCount = organizationBoxCountService.findById(id);
+        final int valueConst = 44435; //временно для отладки - удалить в дальнейшем
+        organizationBoxCountService.save(organizationBoxCount); //временно для отладки  - удалить в дальнейшем
         String boxId = organizationBoxCount.getBox().getName();
         int lastMessage = organizationBoxCount.getCount();
         Set<Map> set = connectorToXDE.getInputEvents(boxId, lastMessage);
@@ -43,7 +45,7 @@ public class EventService {
         //вместо сохранения преобразовать в коллекцию, определить максимум и в многопоточке загрузить архивы
         int maxEvent = saveAllFromXDE(set, organizationBoxCount.getBox());
         organizationBoxCount.setCount(maxEvent);
-        organizationBoxCount.setCount(42352);
+        organizationBoxCount.setCount(valueConst);//временно для отладки - удалить в дальнейшем
         organizationBoxCountService.save(organizationBoxCount);
         return "ok";
     }
