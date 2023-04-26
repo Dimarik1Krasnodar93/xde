@@ -6,8 +6,11 @@ import com.xde.model.Event;
 import com.xde.model.XDESettings;
 import com.xde.model.steps.Step;
 import com.xde.repository.XDESettingsRepository;
+import com.xde.service.EventService;
 import lombok.Getter;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -28,13 +31,14 @@ import java.util.Set;
 @Component
 @Getter
  public class ConnectorToXDE {
-    private int processorsCount = 1;
+    private int processorsCount = 150;
     private XDESettings xdeSettings;
     private String token;
     private static String bearerToken;
     private XDEContainer xdeContainer;
 
-    public static final int MAX_COUNT_EVENTS = 100;
+    private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
+    public static final int MAX_COUNT_EVENTS = 1000;
 
     private XDESettingsRepository xdeSettingsRepository;
 
@@ -78,10 +82,15 @@ import java.util.Set;
             HttpEntity<String> request =
                     new HttpEntity<>(jsonObject.toString(),
                             headers);
-            Map<String, String> map = restTemplate.postForObject(UrlQueries.getUrlToken(),
-                    request, HashMap.class);
-            token = map.get("access_token");
-            bearerToken = "Bearer " + token;
+            try {
+                Map<String, String> map = restTemplate.postForObject(UrlQueries.getUrlToken(),
+                        request, HashMap.class);
+                token = map.get("access_token");
+                bearerToken = "Bearer " + token;
+            } catch (Exception ex) {
+                logger.error(ex.getMessage());
+            }
+
         }
     }
 
@@ -100,6 +109,9 @@ import java.util.Set;
 
     public void executeStep(Step step) {
         if (!step.needToWaiting() && !step.getDone()) {
+            if (step.getStep() == 6 &&  "c273c8fb-1811-40ff-ad55-dea4435f0782".equals(step.getEvent().getDocId())) {
+                logger.info("______step=" + step.getStep() + " docId=" + step.getEvent().getDocId());
+            }
             Map<String, Object> parameters = step.getParameters();
             HttpMethod httpMethod = step.getHttpMethod();
             HttpHeaders headers = step.getHeaders();
@@ -119,7 +131,6 @@ import java.util.Set;
             } catch (Exception ex) {
                 step.setError(responseEntity.getStatusCode() + " " + ex.getMessage());
             }
-
         }
     }
 
@@ -144,7 +155,12 @@ import java.util.Set;
             request =
                     new HttpEntity<>(headers);
         }
-        ResponseEntity<T> responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, classNameResponse);
+        ResponseEntity<T> responseEntity = null;
+        try {
+            responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, classNameResponse);
+        } catch (Exception ex) {
+            logger.error(ex.getMessage());
+        }
         return responseEntity;
     }
 

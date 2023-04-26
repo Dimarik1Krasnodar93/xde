@@ -57,4 +57,10 @@ public class EventRepositoryMemory implements EventRepository {
                 .filter(i -> i.getData() == null && "I".equals(i.getStatus()))
                 .toList();
     }
+
+    @Override
+    public List<Event> findAll() {
+        return eventsStore.values().stream()
+                .toList();
+    }
 }

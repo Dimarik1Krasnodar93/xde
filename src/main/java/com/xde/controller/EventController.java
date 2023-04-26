@@ -3,7 +3,10 @@ package com.xde.controller;
 import com.xde.service.EventService;
 import com.xde.threads.runnableThreads.ThreadApproveAll;
 import com.xde.threads.runnableThreads.ThreadGetEvents;
+import com.xde.xde.ConnectorToXDE;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/event")
 @AllArgsConstructor
 public class EventController {
+    private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
+
     EventService eventService;
     @PostMapping("/getEvents/{id}")
     public Object getData(@PathVariable("id") int id) {
@@ -28,7 +33,8 @@ public class EventController {
 
     @PostMapping("/approve")
     public void approve() {
-            eventService.approveAll();
+
+        eventService.approveAll();
     }
 
     @PostMapping("/getAllAndApprove/{id}")

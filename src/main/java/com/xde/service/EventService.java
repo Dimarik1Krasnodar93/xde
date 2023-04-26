@@ -33,23 +33,33 @@ public class EventService {
     private static Logger logger = LoggerFactory.getLogger(EventService.class);
 
     public String getEvents(int id) {
-        long timeStart = System.currentTimeMillis();
+       // long timeStart = System.currentTimeMillis();
         OrganizationBoxCount organizationBoxCount = organizationBoxCountService.findById(id);
-        final int valueConst = 44453; //временно для отладки - удалить в дальнейшем
-        organizationBoxCountService.save(organizationBoxCount); //временно для отладки  - удалить в дальнейшем
+       // final int valueConst = 44560; //временно для отладки - удалить в дальнейшем
+      //  organizationBoxCountService.save(organizationBoxCount); //временно для отладки  - удалить в дальнейшем
         String boxId = organizationBoxCount.getBox().getName();
         int lastMessage = organizationBoxCount.getCount();
+       // lastMessage = valueConst;
         Set<Map> set = connectorToXDE.getInputEvents(boxId, lastMessage);
-        long timeEnd = System.currentTimeMillis();
-        logger.info("___time2 : " + (timeEnd - timeStart));
+        //long timeEnd = System.currentTimeMillis();
+        //logger.info("___time2 : " + (timeEnd - timeStart));
         //вместо сохранения преобразовать в коллекцию, определить максимум и в многопоточке загрузить архивы
         int maxEvent = saveAllFromXDE(set, organizationBoxCount.getBox());
-        organizationBoxCount.setCount(maxEvent);
-        organizationBoxCount.setCount(valueConst);//временно для отладки - удалить в дальнейшем
-        organizationBoxCountService.save(organizationBoxCount);
+        if (maxEvent > lastMessage && maxEvent > 0) {
+            organizationBoxCount.setCount(maxEvent);
+            organizationBoxCountService.save(organizationBoxCount);
+        }
+      //  organizationBoxCount.setCount(valueConst);//временно для отладки - удалить в дальнейшем
         return "ok";
     }
 
+    public List<Event> getAllFromRepository() {
+        return eventRepository.findAll();
+    }
+
+    public List<Event> getAllToExecute() {
+        return eventRepository.getAllToExecute();
+    }
     public void loadArchive() {
         List<Event> eventList = eventRepository.findAllInIAndNullData();
         ThreadLoaderArchive[] threadLoaderArchives = new ThreadLoaderArchive[connectorToXDE.getProcessorsCount()];
@@ -106,7 +116,7 @@ public class EventService {
         int i = 0;
         List<Event> eventList = new ArrayList<>(ConnectorToXDE.MAX_COUNT_EVENTS);
         for (Map map : set) {
-            logger.info("______Start to parse " + i++);
+           // logger.info("______Start to parse " + i++);
             Event event = new Event();
             Map<String, Object> mapEvent = (Map) map.get("Event");
             Map<String, Object> mapStatusCode = (Map) mapEvent.get("StatusCode");
@@ -114,7 +124,7 @@ public class EventService {
             event.setOrganizationBox(organizationBox);
             event.setDocId(map.get("DocumentId").toString());
             event.setCodeEvent(mapEvent.get("EventId").toString());
-            logger.info("Start to parse " + i + " docId " + event.getDocId());
+            //logger.info("Start to parse " + i + " docId " + event.getDocId());
             event.setOutputDoc((Boolean) mapEvent.get("IsOutput"));
             Status status = new Status(mapStatusCode.get("Value").toString());
             event.setStatus(status.getStatus());
@@ -143,7 +153,7 @@ public class EventService {
                     event.setCertificateThumbprint(mapCertificate.get("Thumbprint").toString());
                 }
             } else {
-                logger.info("map content is null " + i + " docId " + event.getDocId());
+               // logger.info("map content is null " + i + " docId " + event.getDocId());
             }
             Event eventFromRepository = eventRepository.findEventByOrganizationBoxAndDocId(organizationBox, event.getDocId());
             if (eventFromRepository == null) {

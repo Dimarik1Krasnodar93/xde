@@ -35,7 +35,7 @@ import java.util.Map;
  */
 @NoArgsConstructor
 public class StepsApprove implements Step {
-    public static final int SECONDS_IGNORE = 1;
+    public static final int SECONDS_IGNORE = 15;
     public static final int TOTAL_STEPS = 6;
     public static final int ATTACHMENT_SIGN = 14;
 

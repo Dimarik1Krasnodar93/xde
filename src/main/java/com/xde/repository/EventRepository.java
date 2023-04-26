@@ -14,4 +14,5 @@ public interface EventRepository {
     void update(Event event);
     List<Event> getAllToExecute();
     List<Event> findAllInIAndNullData();
+    List<Event> findAll();
 }
