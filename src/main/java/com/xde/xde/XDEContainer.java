@@ -4,6 +4,7 @@ import com.xde.model.Event;
 import com.xde.model.steps.Step;
 import com.xde.model.steps.StepsApprove;
 import com.xde.service.EventService;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 *Класс содержит очереди для работы с событиями
 *хранятся события в Map<Map>. Integer - сделано для разделения потоков
 * */
+@Getter
 public class XDEContainer {
     private volatile   Map<Integer, List<Step>> map = new ConcurrentHashMap<>();
     private  ConnectorToXDE connectorToXDE;

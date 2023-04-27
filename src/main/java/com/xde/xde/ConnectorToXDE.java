@@ -29,14 +29,14 @@ import java.util.*;
 @Component
 @Getter
  public class ConnectorToXDE {
-    private int processorsCount = 170;
+    private int processorsCount = 120;
     private XDESettings xdeSettings;
     private String token;
     private static String bearerToken;
     private XDEContainer xdeContainer;
 
     private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
-    public static final int MAX_COUNT_EVENTS = 900;
+    public static final int MAX_COUNT_EVENTS = 500;
 
     private XDESettingsRepository xdeSettingsRepository;
 
@@ -107,8 +107,8 @@ import java.util.*;
 
     public void executeStep(Step step) {
         if (!step.needToWaiting() && !step.getDone()) {
-            if (step.getStep() == 6 &&  "c273c8fb-1811-40ff-ad55-dea4435f0782".equals(step.getEvent().getDocId())) {
-                logger.info("______step=" + step.getStep() + " docId=" + step.getEvent().getDocId());
+            if (step.getStep() == 6 &&  "b71bf9a9-32d2-440f-bd89-3cb999d59259".equals(step.getEvent().getDocId())) {
+                logger.info("+++++step=" + step.getStep() + " docId=" + step.getEvent().getDocId());
             }
             Map<String, Object> parameters = step.getParameters();
             HttpMethod httpMethod = step.getHttpMethod();
@@ -126,10 +126,14 @@ import java.util.*;
                         step.incrementStep();
                     } else {
                         step.setError(optResponseEntity.get().getStatusCode().toString());
+                        logger.error(String.format("ERROR %s step %d docId %s",
+                                optResponseEntity.get().getStatusCode(), step.getStep(), step.getEvent().getDocId()));
                     }
                 }
             } catch (Exception ex) {
-                step.setError(optResponseEntity.orElseThrow().getStatusCode() + " " + ex.getMessage());
+                logger.error(String.format("ERROR %s step %d docId %s",
+                        optResponseEntity.get().getStatusCode(), step.getStep(), step.getEvent().getDocId()));
+                step.setError(String.format("%s %s",optResponseEntity.orElseThrow().getStatusCode(), ex.getMessage()));
             }
         }
     }
