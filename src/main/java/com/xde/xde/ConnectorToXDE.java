@@ -16,12 +16,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import javax.swing.text.html.Option;
 
 import java.lang.reflect.Array;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  *Класс создает коннектор к сервису xDE.
@@ -31,14 +29,14 @@ import java.util.Set;
 @Component
 @Getter
  public class ConnectorToXDE {
-    private int processorsCount = 150;
+    private int processorsCount = 170;
     private XDESettings xdeSettings;
     private String token;
     private static String bearerToken;
     private XDEContainer xdeContainer;
 
     private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
-    public static final int MAX_COUNT_EVENTS = 1000;
+    public static final int MAX_COUNT_EVENTS = 900;
 
     private XDESettingsRepository xdeSettingsRepository;
 
@@ -102,9 +100,9 @@ import java.util.Set;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", bearerToken);
-        ResponseEntity<Set> responseEntity = executeXdeQuery(HttpMethod.POST, headers, map,
+        Optional<ResponseEntity<Set>> optResponseEntity = executeXdeQuery(HttpMethod.POST, headers, map,
                 UrlQueries.getUrlHistory(), Set.class, String.class);
-        return (Set<Map>) responseEntity.getBody();
+        return (Set<Map>) optResponseEntity.orElseThrow().getBody();
     }
 
     public void executeStep(Step step) {
@@ -116,27 +114,29 @@ import java.util.Set;
             HttpMethod httpMethod = step.getHttpMethod();
             HttpHeaders headers = step.getHeaders();
             headers.add("Authorization", bearerToken);
-            ResponseEntity<String> responseEntity = null;
+            Optional<ResponseEntity<String>> optResponseEntity = Optional.empty();
             try {
                 Class requestClass = parameters.containsKey("body") ? byte[].class : String.class;
-                responseEntity = executeXdeQuery(httpMethod, headers, parameters,
+                optResponseEntity = executeXdeQuery(httpMethod, headers, parameters,
                         step.getUrlRequest(), String.class, requestClass);
-                if (responseEntity.getStatusCode() == HttpStatus.OK
-                        && !responseEntity.getBody().contains("\"Results\":null")) {
-                    step.updateResultFromResponseEntity(responseEntity);
-                    step.incrementStep();
-                } else {
-                    step.setError(responseEntity.getStatusCode().toString());
+                if (!optResponseEntity.isEmpty()) {
+                    if (optResponseEntity.get().getStatusCode() == HttpStatus.OK
+                            && !optResponseEntity.get().getBody().contains("\"Results\":null")) {
+                        step.updateResultFromResponseEntity(optResponseEntity.get());
+                        step.incrementStep();
+                    } else {
+                        step.setError(optResponseEntity.get().getStatusCode().toString());
+                    }
                 }
             } catch (Exception ex) {
-                step.setError(responseEntity.getStatusCode() + " " + ex.getMessage());
+                step.setError(optResponseEntity.orElseThrow().getStatusCode() + " " + ex.getMessage());
             }
         }
     }
 
-    public <T, Y> ResponseEntity<T>  executeXdeQuery(HttpMethod httpMethod, HttpHeaders headers,
-                                                   Map<String, Object> map, String urlRequest,
-                                                  Class<T> classNameResponse, Class<Y> classNameRequest) {
+    public <T, Y> Optional<ResponseEntity<T>> executeXdeQuery(HttpMethod httpMethod, HttpHeaders headers,
+                                                              Map<String, Object> map, String urlRequest,
+                                                              Class<T> classNameResponse, Class<Y> classNameRequest) {
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<Y> request;
         JSONObject jsonObject = new JSONObject();
@@ -160,16 +160,17 @@ import java.util.Set;
             responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, classNameResponse);
         } catch (Exception ex) {
             logger.error(ex.getMessage());
+            return Optional.empty();
         }
-        return responseEntity;
+        return Optional.of(responseEntity);
     }
 
     public String getEventArchive(Event event) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        ResponseEntity<String> result = executeXdeQuery(HttpMethod.GET, headers, new HashMap<>(),
+        Optional<ResponseEntity<String>> result = executeXdeQuery(HttpMethod.GET, headers, new HashMap<>(),
                 UrlQueries.getUrlGetArchive() + event.getLinkArchive(), String.class, String.class);
-        String data =  result.getBody();
+        String data =  result.orElseThrow().getBody();
         return data;
     }
 }
