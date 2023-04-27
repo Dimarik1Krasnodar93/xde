@@ -16,9 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import javax.swing.text.html.Option;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -29,7 +27,7 @@ import java.util.*;
 @Component
 @Getter
  public class ConnectorToXDE {
-    private int processorsCount = 120;
+    private int processorsCount = 12;
     private XDESettings xdeSettings;
     private String token;
     private static String bearerToken;
