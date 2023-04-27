@@ -1,9 +1,7 @@
 package com.xde.model.steps;
 
-import com.xde.dto.TypeHttp;
 import com.xde.model.Event;
 import com.xde.model.OrganizationBox;
-import com.xde.xde.ConnectorToXDE;
 import com.xde.xde.UrlQueries;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -161,8 +159,9 @@ public class StepsApprove implements Step {
     }
     @Override
     public boolean needToWaiting() {
-        return LocalDateTime.now()
-                .isBefore(lastXdeTime.plusSeconds(SECONDS_IGNORE));
+        return fatalException ? LocalDateTime.now()
+                .isBefore(lastXdeTime.plusSeconds( 2 * SECONDS_IGNORE)) : LocalDateTime.now()
+                .isBefore(lastXdeTime.plusSeconds(SECONDS_IGNORE)) ;
     }
 
     @Override
@@ -218,14 +217,7 @@ public class StepsApprove implements Step {
         }
     }
 
-    @Override
-    public MediaType getContentType() {
 
-        switch (step) {
-            case 3: return MediaType.APPLICATION_OCTET_STREAM;
-            default: return MediaType.APPLICATION_JSON;
-        }
-    }
 
     @Override
     public HttpHeaders getHeaders() {
