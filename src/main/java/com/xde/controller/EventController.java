@@ -19,6 +19,7 @@ public class EventController {
     private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
 
     EventService eventService;
+
     @PostMapping("/getEvents/{id}")
     public Object getData(@PathVariable("id") int id) {
         eventService.getEvents(id);
