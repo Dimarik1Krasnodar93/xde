@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import org.springframework.http.*;
 
 import javax.persistence.*;
-import java.io.*;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
@@ -27,16 +26,12 @@ import java.util.Map;
  * @step - номер шага :
  * 1 - ОбменСШинойЭДОЭлектронныйДокументШагСгенерироватьТитулИлиКвитанцию
  * 2 - ОбменСШинойЭДОЭлектронныйДокументШагПолучитьСсылкуНаКонтент
- * 3 - ОбменСШинойЭДОЭлектронныйДокументШагПрочитатьИзАрхива
- * 4 - Подписать на сервере xDE
- * 5 - Записать в архив
- * 6 - Завершение - операция по типу
+ * 3 - 1С-sign
  */
 @NoArgsConstructor
-public class StepsApprove implements Step {
+public class StepsApprove1CSign implements Step {
     public static final int SECONDS_IGNORE = 2;
-    public static final int TOTAL_STEPS = 6;
-    public static final int ATTACHMENT_SIGN = 14;
+    public static final int TOTAL_STEPS = 4;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,16 +56,12 @@ public class StepsApprove implements Step {
     private LocalDateTime lastXdeTime = LocalDateTime.now().minusSeconds(SECONDS_IGNORE);
 
 
-    public StepsApprove(boolean approve, Event event) {
+    public StepsApprove1CSign(boolean approve, Event event) {
         this.event = event;
         this.approve = approve;
         step = 1;
     }
 
-    @Override
-    public boolean needAuthorization() {
-        return step == 3 ? false : true;
-    }
 
     public String getUrlRequest() {
         switch (step) {
@@ -79,10 +70,8 @@ public class StepsApprove implements Step {
                         : UrlQueries.getUrlGetTitleOrReceiptReject();
             case 2: return approve ? UrlQueries.getUrlGetLinkForContentAccept() + result
                     : UrlQueries.getUrlGetLinkForContentReject() + result;
-            case 3: return UrlQueries.getUrlGetArchive() + result;
-            case 4: return UrlQueries.getUrlSign();
-            case 5: return UrlQueries.getUrlGetArchive();
-            case 6: return approve ? UrlQueries.getUrlDocumentsLocalAccept()
+            case 3: return UrlQueries.getUrlSign1c();
+            case 4: return approve ? UrlQueries.getUrlDocumentsLocalAccept()
                     : UrlQueries.getUrlDocumentsLocalReject();
             default: return "";
         }
@@ -112,52 +101,17 @@ public class StepsApprove implements Step {
             map.put("Thumbprint", organizationBox.getThumbprint());
         break;
             case 2: break;
+            case 3:
+                map.put("archLink", result);
+                break;
             case 4:
-              //  map.put("Thumbprint", organizationBox.getThumbprintServer());
-                map.put("Thumbprint", "FC 70 DF 3C 79 15 C3 50 03 F8 06 FB 88 B3 87 A8 85 DE 45 34");
-                map.put("ThrowOnErrors", true);
-                map.put("Contents", new String[]{result}); //ДанныеНаПодписаниеМассив.Добавить(Base64Строка(ДанныеДляПодписания));
-                break;
-            case 5:
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("FileName", name + ".SGN");
-                jsonObject.put("AttachmentType", ATTACHMENT_SIGN);
-                jsonObject.put("DocumentId", event.getDocId());
-                String delimiter =  getDelimiter();
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append("--");
-                stringBuilder.append(delimiter);
-                stringBuilder.append(System.lineSeparator());
-                stringBuilder.append("Content-Disposition: form-data; name=\"json\"");
-                stringBuilder.append(System.lineSeparator());
-                stringBuilder.append(System.lineSeparator());
-                stringBuilder.append(jsonObject);
-                stringBuilder.append(System.lineSeparator());
-                stringBuilder.append("--");
-                stringBuilder.append(delimiter);
-                stringBuilder.append(System.lineSeparator());
-                stringBuilder.append("Content-Disposition: form-data; name=\"content\"; filename=\"");
-                stringBuilder.append(name);
-                stringBuilder.append(".SGN.SGN\"");
-               // stringBuilder.append(".SGN\"");
-                stringBuilder.append(System.lineSeparator());
-                stringBuilder.append(System.lineSeparator());
-                stringBuilder.append(result);
-                stringBuilder.append(System.lineSeparator());
-                stringBuilder.append("--");
-                stringBuilder.append(delimiter);
-                stringBuilder.append("--");
-                byte[] bytes = stringBuilder.toString().getBytes();
-                map.put("body", bytes);
-                contentLength = bytes.length;
-                break;
-            case 6:
                 JSONObject jsonObjectMap = new JSONObject();
                 jsonObjectMap.put("DocumentId", event.getDocId());
                 jsonObjectMap.put("name", name);
                 jsonObjectMap.put("ContentLinkId", contentLink);
-                jsonObjectMap.put("SignatureLinkId", signatureLink);
+                jsonObjectMap.put("SignatureLinkId", result);
                 map.put("SignedTitlesOrReceipts", new JSONObject[] {jsonObjectMap});
+
         }
         return map;
     }
@@ -177,12 +131,14 @@ public class StepsApprove implements Step {
         switch (step) {
             case 1: return HttpMethod.POST;
             case 2: return HttpMethod.GET;
-            case 3: return HttpMethod.GET;
+            case 3: return HttpMethod.POST;
             case 4: return HttpMethod.POST;
-            case 5: return HttpMethod.POST;
-            case 6: return HttpMethod.POST;
             default: return HttpMethod.POST;
         }
+    }
+    @Override
+    public boolean needAuthorization() {
+        return step == 3 ? false : true;
     }
     @Override
     public boolean getDone() {
@@ -206,29 +162,9 @@ public class StepsApprove implements Step {
                 contentLink = result;
             }
             if (step == 3) {
-                sign = responseEntity.getBody();
-//                File file = new File("C:\\!Java\\1.bin");
-//                try {
-//                    OutputStream os = new FileOutputStream(file);
-//                    os.write(sign.getBytes());
-//                } catch (FileNotFoundException e) {
-//                    throw new RuntimeException(e);
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-                result = Base64.getEncoder().encodeToString(sign.getBytes());
-            }
-            if (step == 4) {
                 result = responseEntity.getBody();
-                result = result.substring(1);
-                result = result.substring(0, result.length() - 1);
-                JSONObject jsonObject = new JSONObject(result);
-                result = (String) jsonObject.get("Result");
-                result = new String(Base64.getDecoder().decode(result));
-            }
-            if (step == 5) {
-                result = responseEntity.getBody();
-                signatureLink = result;
+                JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+                result = (String) jsonObject.get("archLinkSIGN");
             }
         } else {
             fatalException = true;
@@ -243,7 +179,7 @@ public class StepsApprove implements Step {
         HttpHeaders headers = new HttpHeaders();
         switch (step) {
             case 3:
-                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                headers.setContentType(MediaType.APPLICATION_JSON);
                 break;
             case 4:
                 headers.setContentType(MediaType.APPLICATION_JSON);

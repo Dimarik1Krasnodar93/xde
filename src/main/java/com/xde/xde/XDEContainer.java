@@ -3,6 +3,7 @@ package com.xde.xde;
 import com.xde.model.Event;
 import com.xde.model.steps.Step;
 import com.xde.model.steps.StepsApprove;
+import com.xde.model.steps.StepsApprove1CSign;
 import com.xde.service.EventService;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -45,7 +46,7 @@ public class XDEContainer {
         for (Event event : listEvent) {
             event.setStartedExecution(true);
             List<Step> list = map.get(event.getEventId() % totalProcessors);
-            list.add(new StepsApprove(true, event));
+            list.add(new StepsApprove1CSign(true, event));
         }
     }
 

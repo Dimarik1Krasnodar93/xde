@@ -28,7 +28,6 @@ public class EventService {
     private ConnectorToXDE connectorToXDE;
     private OrganizationBoxCountService organizationBoxCountService;
     private EventRepository eventRepository;
-    private static int MAX_THREAD_INPUT = 3;
 
     private static Logger logger = LoggerFactory.getLogger(EventService.class);
 
@@ -39,6 +38,7 @@ public class EventService {
       //  organizationBoxCountService.save(organizationBoxCount); //временно для отладки  - удалить в дальнейшем
         String boxId = organizationBoxCount.getBox().getName();
         int lastMessage = organizationBoxCount.getCount();
+        lastMessage = 58885;
        // lastMessage = valueConst;
         Set<Map> set = connectorToXDE.getInputEvents(boxId, lastMessage);
         //long timeEnd = System.currentTimeMillis();
@@ -47,6 +47,7 @@ public class EventService {
         int maxEvent = saveAllFromXDE(set, organizationBoxCount.getBox());
         if (maxEvent > lastMessage && maxEvent > 0) {
             organizationBoxCount.setCount(maxEvent);
+            organizationBoxCount.setCount(58885);// ОТЛАДКА УДАЛИТЬ ВРЕМЕННО
             organizationBoxCountService.save(organizationBoxCount);
         }
       //  organizationBoxCount.setCount(valueConst);//временно для отладки - удалить в дальнейшем

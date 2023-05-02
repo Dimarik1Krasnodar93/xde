@@ -23,4 +23,6 @@ public class XDESettings {
     private String urlCrypto;
     @Column(name = "url_archive")
     private String urlArchive;
+    @Column(name = "url_sign_1c")
+    private String urlSign1c;
 }

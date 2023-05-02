@@ -22,4 +22,5 @@ public interface Step {
     void updateResultFromResponseEntity(ResponseEntity<String> responseEntity);
     int getStep();
     Event getEvent();
+    boolean needAuthorization();
 }

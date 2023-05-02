@@ -22,6 +22,8 @@ public class UrlQueries {
     private static String urlDocumentsLocalAccept;
     private static String urlDocumentsLocalReject;
 
+    private static String urlSign1c;
+
     public static void setAllUrl(String mainUrl) {
         urlToken = mainUrl + "/token";
         urlHistory = mainUrl + "/v3/statuses/history";
@@ -39,6 +41,11 @@ public class UrlQueries {
     public static void setArchiveUrl(String mainUrl) {
         urlGetArchive = mainUrl + "/archive/";
     }
+
+    public static void setUrlSign1c(String mainUrl) {
+        UrlQueries.urlSign1c = mainUrl;
+    }
+
     public static String getUrlToken() {
         return urlToken;
     }
@@ -77,5 +84,9 @@ public class UrlQueries {
 
     public static String getUrlDocumentsLocalReject() {
         return urlDocumentsLocalReject;
+    }
+
+    public static String getUrlSign1c() {
+        return urlSign1c;
     }
 }

@@ -27,14 +27,14 @@ import java.util.*;
 @Component
 @Getter
  public class ConnectorToXDE {
-    private int processorsCount = 12;
+    private int processorsCount = 1;
     private XDESettings xdeSettings;
     private String token;
     private static String bearerToken;
     private XDEContainer xdeContainer;
 
     private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
-    public static final int MAX_COUNT_EVENTS = 500;
+    public static final int MAX_COUNT_EVENTS = 5;
 
     private XDESettingsRepository xdeSettingsRepository;
 
@@ -60,6 +60,7 @@ import java.util.*;
         UrlQueries.setAllUrl(xdeSettings.getUrl());
         UrlQueries.setAllCryptoUrl(xdeSettings.getUrlCrypto());
         UrlQueries.setArchiveUrl(xdeSettings.getUrlArchive());
+        UrlQueries.setUrlSign1c(xdeSettings.getUrlSign1c());
     }
 
 
@@ -86,7 +87,6 @@ import java.util.*;
             } catch (Exception ex) {
                 logger.error(ex.getMessage());
             }
-
         }
     }
 
@@ -111,7 +111,9 @@ import java.util.*;
             Map<String, Object> parameters = step.getParameters();
             HttpMethod httpMethod = step.getHttpMethod();
             HttpHeaders headers = step.getHeaders();
-            headers.add("Authorization", bearerToken);
+            if (step.needAuthorization()) {
+                headers.add("Authorization", bearerToken);
+            }
             Optional<ResponseEntity<String>> optResponseEntity = Optional.empty();
             try {
                 Class requestClass = parameters.containsKey("body") ? byte[].class : String.class;

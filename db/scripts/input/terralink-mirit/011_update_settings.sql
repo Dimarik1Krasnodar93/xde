@@ -1,0 +1,1 @@
+UPDATE xde_settings set url_sign_1c = 'http://10.100.103.8:8080/TLSIGN/hs/sign';
