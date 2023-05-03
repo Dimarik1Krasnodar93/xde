@@ -30,7 +30,7 @@ import java.util.Map;
  */
 @NoArgsConstructor
 public class StepsApprove1CSign implements Step {
-    public static final int SECONDS_IGNORE = 2;
+    public static final int SECONDS_IGNORE = 5;
     public static final int TOTAL_STEPS = 4;
 
     @Id
@@ -103,6 +103,10 @@ public class StepsApprove1CSign implements Step {
             case 2: break;
             case 3:
                 map.put("archLink", result);
+                map.put("thumbprint", event.getOrganizationBox().getThumbprint1C());
+                map.put("сertPassword", event.getOrganizationBox().getCertificatePassword1C());
+                map.put("archType", "3");
+                map.put("DocumentId", event.getDocId());
                 break;
             case 4:
                 JSONObject jsonObjectMap = new JSONObject();
@@ -123,7 +127,7 @@ public class StepsApprove1CSign implements Step {
     public boolean needToWaiting() {
         return fatalException ? LocalDateTime.now()
                 .isBefore(lastXdeTime.plusSeconds( 2 * SECONDS_IGNORE)) : LocalDateTime.now()
-                .isBefore(lastXdeTime.plusSeconds(SECONDS_IGNORE)) ;
+                .isBefore(lastXdeTime.plusSeconds(step != 2 ? SECONDS_IGNORE : 2 * SECONDS_IGNORE)) ;
     }
 
     @Override

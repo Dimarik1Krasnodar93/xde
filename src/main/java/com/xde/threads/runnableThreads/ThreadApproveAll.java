@@ -21,6 +21,17 @@ public class ThreadApproveAll extends Thread {
         logger.info("+++START APPROVE " + LocalDateTime.now());
         while (!interrupted()) {
             eventService.approveAll();
+            if (!eventService.needWork()) {
+                try {
+                    Thread.sleep(10);
+                    logger.info("+++SLEEP " + LocalDateTime.now());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (eventService.isFatalError()) {
+                Thread.currentThread().interrupt();
+            }
 //            if (!eventService.needWork()) {
 //                logger.info("+++FINISH APPROVE " + LocalDateTime.now());
 //                Thread.currentThread().interrupt();

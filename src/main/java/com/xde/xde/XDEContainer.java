@@ -31,6 +31,7 @@ public class XDEContainer {
     public void execute(int mapNumber) {
       List<Step> steps = map.get(mapNumber);
       steps.parallelStream().forEach(i -> connectorToXDE.executeStep(i));
+
       //отладка удалить - для выполнения в 1 потоке
       //execute in 1 Thread
 //      for (Step step : steps) {

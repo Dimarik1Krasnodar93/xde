@@ -27,14 +27,15 @@ import java.util.*;
 @Component
 @Getter
  public class ConnectorToXDE {
-    private int processorsCount = 1;
+    private int processorsCount = 30;
     private XDESettings xdeSettings;
     private String token;
     private static String bearerToken;
     private XDEContainer xdeContainer;
 
     private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
-    public static final int MAX_COUNT_EVENTS = 5;
+    public static final int MAX_COUNT_EVENTS = 1000;
+    private boolean fatalError = false;
 
     private XDESettingsRepository xdeSettingsRepository;
 
@@ -105,7 +106,7 @@ import java.util.*;
 
     public void executeStep(Step step) {
         if (!step.needToWaiting() && !step.getDone()) {
-            if (step.getStep() == 6 &&  "b71bf9a9-32d2-440f-bd89-3cb999d59259".equals(step.getEvent().getDocId())) {
+            if (step.getStep() == 4 &&  "e133eaa7-d247-42da-9924-36f12aa7835c".equals(step.getEvent().getDocId())) {
                 logger.info("+++++step=" + step.getStep() + " docId=" + step.getEvent().getDocId());
             }
             Map<String, Object> parameters = step.getParameters();
@@ -164,6 +165,10 @@ import java.util.*;
             responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, classNameResponse);
         } catch (Exception ex) {
             logger.error(ex.getMessage());
+            if (responseEntity == null) {
+                fatalError = true;
+                logger.error("--fatal error--");
+            }
             return Optional.empty();
         }
         return Optional.of(responseEntity);

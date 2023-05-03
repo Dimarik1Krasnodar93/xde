@@ -31,6 +31,9 @@ public class EventService {
 
     private static Logger logger = LoggerFactory.getLogger(EventService.class);
 
+    public boolean isFatalError() {
+        return connectorToXDE.isFatalError();
+    }
     public String getEvents(int id) {
        // long timeStart = System.currentTimeMillis();
         OrganizationBoxCount organizationBoxCount = organizationBoxCountService.findById(id);
@@ -38,7 +41,6 @@ public class EventService {
       //  organizationBoxCountService.save(organizationBoxCount); //временно для отладки  - удалить в дальнейшем
         String boxId = organizationBoxCount.getBox().getName();
         int lastMessage = organizationBoxCount.getCount();
-        lastMessage = 58885;
        // lastMessage = valueConst;
         Set<Map> set = connectorToXDE.getInputEvents(boxId, lastMessage);
         //long timeEnd = System.currentTimeMillis();
@@ -47,7 +49,6 @@ public class EventService {
         int maxEvent = saveAllFromXDE(set, organizationBoxCount.getBox());
         if (maxEvent > lastMessage && maxEvent > 0) {
             organizationBoxCount.setCount(maxEvent);
-            organizationBoxCount.setCount(58885);// ОТЛАДКА УДАЛИТЬ ВРЕМЕННО
             organizationBoxCountService.save(organizationBoxCount);
         }
       //  organizationBoxCount.setCount(valueConst);//временно для отладки - удалить в дальнейшем

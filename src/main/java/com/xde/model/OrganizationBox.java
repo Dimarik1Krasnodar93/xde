@@ -30,4 +30,8 @@ public class OrganizationBox {
     @Column
     @Type(type = "org.hibernate.type.TextType")
     private String certificate;
+    @Column(name = "thumbprint_1c")
+    private String thumbprint1C;
+    @Column(name = "certificate_password_1c")
+    private String certificatePassword1C;
 }
