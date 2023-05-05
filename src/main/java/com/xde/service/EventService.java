@@ -1,14 +1,14 @@
 package com.xde.service;
 
 import com.xde.Status;
+import com.xde.enums.StepType;
 import com.xde.handlers.EventHandler;
 import com.xde.model.Event;
 import com.xde.model.OrganizationBox;
 import com.xde.model.OrganizationBoxCount;
+import com.xde.repository.DocInputRepository;
 import com.xde.repository.EventRepository;
-import com.xde.threads.runnableThreads.ThreadContainer;
-import com.xde.threads.runnableThreads.ThreadLoaderArchive;
-import com.xde.threads.runnableThreads.ThreadRemoveSteps;
+import com.xde.threads.runnableThreads.*;
 import com.xde.xde.ConnectorToXDE;
 import com.xde.xde.XDEContainer;
 import lombok.AllArgsConstructor;
@@ -28,6 +28,8 @@ public class EventService {
     private ConnectorToXDE connectorToXDE;
     private OrganizationBoxCountService organizationBoxCountService;
     private EventRepository eventRepository;
+    private DocInputRepository docInputRepository;
+    private StepService stepService;
 
     private static Logger logger = LoggerFactory.getLogger(EventService.class);
 
@@ -41,13 +43,13 @@ public class EventService {
       //  organizationBoxCountService.save(organizationBoxCount); //временно для отладки  - удалить в дальнейшем
         String boxId = organizationBoxCount.getBox().getName();
         int lastMessage = organizationBoxCount.getCount();
+        organizationBoxCount.setCount(lastMessage);
+        organizationBoxCountService.save(organizationBoxCount);
        // lastMessage = valueConst;
+        lastMessage = 73320;
         Set<Map> set = connectorToXDE.getInputEvents(boxId, lastMessage);
-        //long timeEnd = System.currentTimeMillis();
-        //logger.info("___time2 : " + (timeEnd - timeStart));
-        //вместо сохранения преобразовать в коллекцию, определить максимум и в многопоточке загрузить архивы
         int maxEvent = saveAllFromXDE(set, organizationBoxCount.getBox());
-        if (maxEvent > lastMessage && maxEvent > 0) {
+        if (maxEvent > lastMessage && maxEvent > 0 ) {
             organizationBoxCount.setCount(maxEvent);
             organizationBoxCountService.save(organizationBoxCount);
         }
@@ -55,13 +57,6 @@ public class EventService {
         return "ok";
     }
 
-    public List<Event> getAllFromRepository() {
-        return eventRepository.findAll();
-    }
-
-    public List<Event> getAllToExecute() {
-        return eventRepository.getAllToExecute();
-    }
     public void loadArchive() {
         List<Event> eventList = eventRepository.findAllInIAndNullData();
         ThreadLoaderArchive[] threadLoaderArchives = new ThreadLoaderArchive[connectorToXDE.getProcessorsCount()];
@@ -77,39 +72,37 @@ public class EventService {
             }
         }
     }
-    public void approveAll() {
-        XDEContainer xdeContainer = connectorToXDE.getXdeContainer();
-        ThreadRemoveSteps[] threadRemoveSteps = new ThreadRemoveSteps[connectorToXDE.getProcessorsCount()];
-        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
-            threadRemoveSteps[i] = new ThreadRemoveSteps(xdeContainer, i);
-            threadRemoveSteps[i].start();
-        }
-        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
-            try {
-                threadRemoveSteps[i].join();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        List<Event> listApprove = eventRepository.getAllToExecute();
-        ThreadContainer[] threadContainers = new ThreadContainer[connectorToXDE.getProcessorsCount()];
-        xdeContainer.addStepsApprove(connectorToXDE.getProcessorsCount(), listApprove);
-        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
-            threadContainers[i] = new ThreadContainer(xdeContainer,
-                    i);
-            threadContainers[i].start();
-        }
-        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
-            try {
-                threadContainers[i].join();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
 
+    public void approveAll() {
+        stepService.executeSteps(() -> eventRepository.getAllToExecute(), StepType.ACCEPT_INPUT);
     }
 
+    public void createAll() {
+        stepService.executeSteps(() -> eventRepository.getAllToCreate(), StepType.CREATE_INPUT);
+    }
+
+    public void updateAll() {
+        List<Event> list = eventRepository.getAllToUpdate();
+        Thread[] threadUpdaterStatuses = new ThreadUpdaterStatuses[connectorToXDE.getProcessorsCount()];
+        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
+            threadUpdaterStatuses[i] = new ThreadUpdaterStatuses(eventRepository,
+                    docInputRepository, i, connectorToXDE.getProcessorsCount(), list);
+            threadUpdaterStatuses[i].start();
+        }
+        for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
+            try {
+                threadUpdaterStatuses[i].join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
     public boolean needWork() {
+        return eventRepository.getAllToExecute().size() > 0
+                || connectorToXDE.getXdeContainer().stepsAreWorking();
+    }
+
+    public boolean needCreate() {
         return eventRepository.getAllToExecute().size() > 0
                 || connectorToXDE.getXdeContainer().stepsAreWorking();
     }

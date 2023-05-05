@@ -23,6 +23,7 @@ public class UrlQueries {
     private static String urlDocumentsLocalReject;
 
     private static String urlSign1c;
+    private static String urlMetaData;
 
     public static void setAllUrl(String mainUrl) {
         urlToken = mainUrl + "/token";
@@ -33,6 +34,7 @@ public class UrlQueries {
         urlGetLinkForContentReject = mainUrl + "/v2/document/reject/content/tasks/";
         urlDocumentsLocalAccept = mainUrl + "/documents/accept/local";
         urlDocumentsLocalReject = mainUrl + "/documents/reject/local";
+        urlMetaData = mainUrl + "/v3/documents/info/";
 
     }
     public static void setAllCryptoUrl(String mainUrl) {
@@ -88,5 +90,9 @@ public class UrlQueries {
 
     public static String getUrlSign1c() {
         return urlSign1c;
+    }
+
+    public static String getUrlMetaData() {
+        return urlMetaData;
     }
 }

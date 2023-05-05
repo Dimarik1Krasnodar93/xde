@@ -2,7 +2,9 @@ package com.xde.controller;
 
 import com.xde.service.EventService;
 import com.xde.threads.runnableThreads.ThreadApproveAll;
+import com.xde.threads.runnableThreads.ThreadCreateDocInput;
 import com.xde.threads.runnableThreads.ThreadGetEvents;
+import com.xde.threads.runnableThreads.ThreadUpdateAll;
 import com.xde.xde.ConnectorToXDE;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -42,7 +44,11 @@ public class EventController {
     public void getAndApprove(@PathVariable("id") int id) throws InterruptedException {
         Thread threadGetEvents = new ThreadGetEvents(eventService, id);
         Thread threadApproveAll = new ThreadApproveAll(eventService);
+        Thread threadCreateDocInput = new ThreadCreateDocInput(eventService);
+        Thread threadUpdateAll = new ThreadUpdateAll(eventService);
         threadGetEvents.start();
-        threadApproveAll.start();
+       // threadApproveAll.start();
+        threadCreateDocInput.start();
+        threadUpdateAll.start();
     }
 }

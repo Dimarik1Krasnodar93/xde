@@ -27,7 +27,7 @@ import java.util.*;
 @Component
 @Getter
  public class ConnectorToXDE {
-    private int processorsCount = 30;
+    private int processorsCount = 1;
     private XDESettings xdeSettings;
     private String token;
     private static String bearerToken;
@@ -106,9 +106,6 @@ import java.util.*;
 
     public void executeStep(Step step) {
         if (!step.needToWaiting() && !step.getDone()) {
-            if (step.getStep() == 4 &&  "e133eaa7-d247-42da-9924-36f12aa7835c".equals(step.getEvent().getDocId())) {
-                logger.info("+++++step=" + step.getStep() + " docId=" + step.getEvent().getDocId());
-            }
             Map<String, Object> parameters = step.getParameters();
             HttpMethod httpMethod = step.getHttpMethod();
             HttpHeaders headers = step.getHeaders();
@@ -166,8 +163,11 @@ import java.util.*;
         } catch (Exception ex) {
             logger.error(ex.getMessage());
             if (responseEntity == null) {
-                fatalError = true;
-                logger.error("--fatal error--");
+                if (!ex.getMessage().contains("запланированные задачи")
+                && !ex.getMessage().contains("недоступна")) {
+                    fatalError = true;
+                    logger.error("--fatal error--");
+                }
             }
             return Optional.empty();
         }

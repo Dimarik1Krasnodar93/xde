@@ -1,16 +1,21 @@
 package com.xde.xde;
 
+import com.xde.enums.StepType;
 import com.xde.model.Event;
 import com.xde.model.steps.Step;
-import com.xde.model.steps.StepsApprove;
+import com.xde.model.steps.StepCreateDocInput;
 import com.xde.model.steps.StepsApprove1CSign;
 import com.xde.service.EventService;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.xde.enums.StepType.*;
 
 /**
 *Класс содержит очереди для работы с событиями
@@ -31,17 +36,12 @@ public class XDEContainer {
     public void execute(int mapNumber) {
       List<Step> steps = map.get(mapNumber);
       steps.parallelStream().forEach(i -> connectorToXDE.executeStep(i));
-
-      //отладка удалить - для выполнения в 1 потоке
-      //execute in 1 Thread
-//      for (Step step : steps) {
-//          long start = System.currentTimeMillis();
-//          connectorToXDE.executeStep(step);
-//          long end = System.currentTimeMillis();
-//          long res = end - start;
-//          logger.info("=============" + res);
-//      }
     }
+
+    private void saveStepResults(Step step) {
+       // String result = getStepResult
+    }
+
 
     public void addStepsApprove(int totalProcessors, List<Event> listEvent) {
         for (Event event : listEvent) {
@@ -51,13 +51,31 @@ public class XDEContainer {
         }
     }
 
+    public void addSteps(int totalProcessors, List<Event> listEvent, StepType type) {
+        for (Event event : listEvent) {
+
+            List<Step> list = map.get(event.getEventId() % totalProcessors);
+            switch (type) {
+                case ACCEPT_INPUT:
+                    event.setStartedExecution(true);
+                    list.add(new StepsApprove1CSign(true, event));
+                    break;
+                case CREATE_INPUT:
+                    event.setStartedCreation(true);
+                    list.add(new StepCreateDocInput(event));
+                    break;
+                default: list.add(new StepsApprove1CSign(true, event));
+            }
+        }
+    }
+
     public void removeDoneSteps(int processor) {
         for (int i = 0; i < processor; i++) {
             List<Step> list = map.get(i);
             Iterator<Step> iterator = list.iterator();
             while (iterator.hasNext()) {
                 Step step = iterator.next();
-                if (step.getDone()) {
+                if (step.getDone() && step.getSavedResults()) {
                     iterator.remove();
                 }
             }

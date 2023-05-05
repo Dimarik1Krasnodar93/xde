@@ -20,7 +20,6 @@
     <include file="scripts/input/terralink-mirit/007_update_xde_Settings_add_urlCrypto.sql" relativeToChangelogFile="true"/>
     <include file="scripts/input/terralink-mirit/008_update_organization_box_thumbprint_server.sql" relativeToChangelogFile="true"/>
     <include file="scripts/input/terralink-mirit/009_update_settings.sql" relativeToChangelogFile="true"/>
-    <include file="scripts/input/terralink-mirit/010_update_organization_box_count.sql" relativeToChangelogFile="true"/>
+    <include file="scripts/input/terralink-mirit/010_update_organization_box.sql" relativeToChangelogFile="true"/>
     <include file="scripts/input/terralink-mirit/011_update_settings.sql" relativeToChangelogFile="true"/>
-    <include file="scripts/input/terralink-mirit/012_update_organization_box.sql" relativeToChangelogFile="true"/>
 </databaseChangeLog>

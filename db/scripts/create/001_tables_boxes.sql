@@ -22,6 +22,6 @@ CREATE TABLE organization_box (
 
 CREATE TABLE organization_box_count (
     id SERIAL PRIMARY KEY,
-    box INT REFERENCES organization_box(id),
+    box_id INT REFERENCES organization_box(id),
     count INT
 )

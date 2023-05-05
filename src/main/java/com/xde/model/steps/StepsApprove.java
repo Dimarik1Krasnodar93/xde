@@ -1,5 +1,6 @@
 package com.xde.model.steps;
 
+import com.xde.dto.StepResult;
 import com.xde.model.Event;
 import com.xde.model.OrganizationBox;
 import com.xde.xde.UrlQueries;
@@ -58,6 +59,9 @@ public class StepsApprove implements Step {
     private boolean fatalException;
     private String exceptionMessage;
     private boolean done;
+    private boolean savedResults;
+    @Transient
+    private StepResult stepResult;
     private LocalDateTime lastXdeTime = LocalDateTime.now().minusSeconds(SECONDS_IGNORE);
 
 
@@ -70,6 +74,11 @@ public class StepsApprove implements Step {
     @Override
     public boolean needAuthorization() {
         return step == 3 ? false : true;
+    }
+
+    @Override
+    public StepResult getStepResult() {
+        return new StepResult();
     }
 
     public String getUrlRequest() {
@@ -184,9 +193,15 @@ public class StepsApprove implements Step {
             default: return HttpMethod.POST;
         }
     }
+
     @Override
     public boolean getDone() {
         return done;
+    }
+
+    @Override
+    public boolean getSavedResults() {
+        return true;
     }
 
     @Override
@@ -236,8 +251,6 @@ public class StepsApprove implements Step {
         }
     }
 
-
-
     @Override
     public HttpHeaders getHeaders() {
         HttpHeaders headers = new HttpHeaders();
@@ -267,4 +280,15 @@ public class StepsApprove implements Step {
         exceptionMessage = message;
         lastXdeTime = LocalDateTime.now();
     }
+
+    @Override
+    public void setSavedResults() {
+        savedResults = true;
+    }
+
+    @Override
+    public boolean needToSave() {
+        return false;
+    }
+
 }

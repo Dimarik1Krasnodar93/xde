@@ -1,5 +1,6 @@
 package com.xde.model.steps;
 
+import com.xde.dto.StepResult;
 import com.xde.model.Event;
 import com.xde.model.OrganizationBox;
 import com.xde.xde.UrlQueries;
@@ -53,6 +54,10 @@ public class StepsApprove1CSign implements Step {
     private boolean fatalException;
     private String exceptionMessage;
     private boolean done;
+    private boolean savedResults;
+
+    @Transient
+    private StepResult stepResult;
     private LocalDateTime lastXdeTime = LocalDateTime.now().minusSeconds(SECONDS_IGNORE);
 
 
@@ -150,6 +155,21 @@ public class StepsApprove1CSign implements Step {
     }
 
     @Override
+    public boolean getSavedResults() {
+        return true;
+    }
+
+    @Override
+    public void setSavedResults() {
+        savedResults = true;
+    }
+
+    @Override
+    public StepResult getStepResult() {
+        return new StepResult();
+    }
+
+    @Override
     public void updateResultFromResponseEntity(ResponseEntity<String> responseEntity) {
         fatalException = false;
         exceptionMessage = "";
@@ -206,5 +226,10 @@ public class StepsApprove1CSign implements Step {
         fatalException = true;
         exceptionMessage = message;
         lastXdeTime = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean needToSave() {
+        return false;
     }
 }
