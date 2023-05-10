@@ -1,13 +1,13 @@
 package com.xde.repository;
 
 import com.xde.dto.BoxDocument;
+import com.xde.handlers.EventHandler;
+import com.xde.model.DocInput;
 import com.xde.model.Event;
 import com.xde.model.OrganizationBox;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -15,7 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * */
 @Repository
 public class EventRepositoryMemory implements EventRepository {
-    private int id = 0;
+    private DocInputRepository docInputRepository;
+    private static int id = 0;
+
     private Map<BoxDocument, Event> eventsStore = new ConcurrentHashMap<>();
 
     @Override
@@ -28,7 +30,15 @@ public class EventRepositoryMemory implements EventRepository {
     public void save(Event event) {
         BoxDocument boxDocument = new BoxDocument(event.getOrganizationBox(), event.getDocId());
         event.setId(++id);
-        eventsStore.put(boxDocument, event);
+        Event eventFromRepository = eventsStore.get(boxDocument);
+        if (eventFromRepository == null) {
+            eventsStore.put(boxDocument, event);
+        } else {
+            if (EventHandler.getPriority(event.getStatus())
+                    > EventHandler.getPriority(eventFromRepository.getStatus())) {
+                eventsStore.put(boxDocument, event);
+            }
+        }
     }
 
     @Override
@@ -53,8 +63,8 @@ public class EventRepositoryMemory implements EventRepository {
 
     @Override
     public List<Event> getAllToCreate() {
-        return eventsStore.values().stream()
-                .filter(i -> !i.isStartedCreation()  && "I".equals(i.getStatus()))
+         return  eventsStore.values().stream()
+                .filter(i -> !i.isStartedCreation())
                 .toList();
     }
 

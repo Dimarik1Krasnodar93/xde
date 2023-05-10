@@ -3,6 +3,7 @@ package com.xde.service;
 import com.xde.Status;
 import com.xde.enums.StepType;
 import com.xde.handlers.EventHandler;
+import com.xde.model.DocInput;
 import com.xde.model.Event;
 import com.xde.model.OrganizationBox;
 import com.xde.model.OrganizationBoxCount;
@@ -46,7 +47,6 @@ public class EventService {
         organizationBoxCount.setCount(lastMessage);
         organizationBoxCountService.save(organizationBoxCount);
        // lastMessage = valueConst;
-        lastMessage = 73320;
         Set<Map> set = connectorToXDE.getInputEvents(boxId, lastMessage);
         int maxEvent = saveAllFromXDE(set, organizationBoxCount.getBox());
         if (maxEvent > lastMessage && maxEvent > 0 ) {
@@ -78,7 +78,28 @@ public class EventService {
     }
 
     public void createAll() {
-        stepService.executeSteps(() -> eventRepository.getAllToCreate(), StepType.CREATE_INPUT);
+        List<Event> list = eventRepository.getAllToCreate();
+        List<String> listString = new ArrayList<>(list.size());
+        for (Event event : list) {
+            listString.add(event.getDocId());
+        }
+        List<DocInput> listInDb = docInputRepository.findByIdDocIn(listString);
+        Iterator<Event> iterator = list.iterator();
+        List<Event> listToCreate = new ArrayList<>(list.size());
+       // Event event = null;
+        boolean skipElement = false;
+        for (Event event : list) {
+            skipElement = false;
+            for (DocInput docInput : listInDb) {
+                if (event.getDocId().equals(docInput.getIdDoc())) {
+                    skipElement = true;
+                }
+            }
+            if (!skipElement) {
+                listToCreate.add(event);
+            }
+        }
+        stepService.executeSteps(() -> list, StepType.CREATE_INPUT);
     }
 
     public void updateAll() {
@@ -104,7 +125,7 @@ public class EventService {
 
     public boolean needCreate() {
         return eventRepository.getAllToExecute().size() > 0
-                || connectorToXDE.getXdeContainer().stepsAreWorking();
+                || connectorToXDE.getXdeContainer().stepsAreWorking(StepType.CREATE_INPUT);
     }
     private int saveAllFromXDE(Set<Map> set, OrganizationBox organizationBox) {
         int result = 0;

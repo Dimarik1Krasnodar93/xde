@@ -24,7 +24,7 @@ public class ThreadApproveAll extends Thread {
             if (!eventService.needWork()) {
                 try {
                     Thread.sleep(10);
-                    logger.info("+++SLEEP " + LocalDateTime.now());
+                   // logger.info("+++SLEEP " + LocalDateTime.now());
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

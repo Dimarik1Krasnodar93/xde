@@ -1,6 +1,7 @@
 package com.xde.threads.runnableThreads;
 
 import com.xde.dto.StepResult;
+import com.xde.enums.StepType;
 import com.xde.model.DocInput;
 import com.xde.model.steps.Step;
 import com.xde.repository.DocInputRepository;
@@ -22,7 +23,8 @@ public class ThreadSaverResults extends Thread {
 
     @Override
     public void run() {
-        List<Step> steps = xdeContainer.getMap().get(processorValue);
+        List<Step> steps = xdeContainer.getMap()
+                .get(StepType.CREATE_INPUT).get(processorValue);
         List<DocInput> list = new ArrayList<>();
         List<Step> stepsSaved = new LinkedList<>();
         for (Step step : steps) {
@@ -33,7 +35,9 @@ public class ThreadSaverResults extends Thread {
                 stepsSaved.add(step);
             }
         }
-        docInputRepository.saveAll(list);
+        if (list.size() > 0) {
+            docInputRepository.saveAll(list);
+        }
         for (Step step : stepsSaved) {
             step.setSavedResults();
         }

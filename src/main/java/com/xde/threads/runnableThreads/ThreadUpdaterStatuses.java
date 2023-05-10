@@ -21,19 +21,25 @@ public class ThreadUpdaterStatuses extends Thread {
 
     @Override
     public void run() {
-        List<DocInput> listToSave = new ArrayList<>(listToUpdate.size());
-        for (int i = 0; i < listToUpdate.size(); i++) {
+        List<DocInput> listToUpdate = new ArrayList<>(this.listToUpdate.size());
+        for (int i = 0; i < this.listToUpdate.size(); i++) {
             if ( i % processorsTotal == processorValue) {
-                DocInput docInput = docInputRepository.findByIdDoc(listToUpdate.get(i).getDocId());
-                if (docInput != null) {
-                    if (EventHandler.getPriority(docInput.getStatusEd()) <
-                            EventHandler.getPriority( listToUpdate.get(i).getStatus())) {
-                        docInput.setStatusEd(listToUpdate.get(i).getStatus());
-                        listToSave.add(docInput);
+                try {
+                    DocInput docInput = docInputRepository.findByIdDoc(this.listToUpdate.get(i).getDocId());
+                    if (docInput != null) {
+                        if (EventHandler.getPriority(docInput.getStatusEd()) <
+                                EventHandler.getPriority(this.listToUpdate.get(i).getStatus())) {
+                            docInput.setStatusEd(this.listToUpdate.get(i).getStatus());
+                            listToUpdate.add(docInput);
+                        }
                     }
+                } catch (Exception ex) {
+                    ex.getMessage();
                 }
             }
         }
-        docInputRepository.saveAll(listToSave);
+        if (listToUpdate.size() > 0) {
+            docInputRepository.saveAll(listToUpdate);
+        }
     }
 }

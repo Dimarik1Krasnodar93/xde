@@ -23,18 +23,23 @@ import static com.xde.enums.StepType.*;
 * */
 @Getter
 public class XDEContainer {
-    private volatile   Map<Integer, List<Step>> map = new ConcurrentHashMap<>();
+    private Map<StepType, Map<Integer, List<Step>>> map = new ConcurrentHashMap<>();
     private  ConnectorToXDE connectorToXDE;
     private static Logger logger = LoggerFactory.getLogger(EventService.class);
     public XDEContainer(int processorsCount, ConnectorToXDE connectorToXDE) {
         this.connectorToXDE = connectorToXDE;
-        for (int i = 0; i < processorsCount; i++) {
-            this.map.put(i, new ArrayList<>(ConnectorToXDE.MAX_COUNT_EVENTS));
+        for (StepType stepType : StepType.values()) {
+            Map<Integer, List<Step>> mapTemp = new ConcurrentHashMap<>();
+            for (int i = 0; i < processorsCount; i++) {
+                mapTemp.put(i, new ArrayList<>(ConnectorToXDE.MAX_COUNT_EVENTS));
+            }
+            map.put(stepType, mapTemp);
         }
     }
 
-    public void execute(int mapNumber) {
-      List<Step> steps = map.get(mapNumber);
+    public void execute(StepType stepType, int mapNumber) {
+      Map<Integer, List<Step>> mapStepType = map.get(stepType);
+      List<Step> steps = mapStepType.get(mapNumber);
       steps.parallelStream().forEach(i -> connectorToXDE.executeStep(i));
     }
 
@@ -44,17 +49,18 @@ public class XDEContainer {
 
 
     public void addStepsApprove(int totalProcessors, List<Event> listEvent) {
+        Map<Integer, List<Step>> mapStepType = map.get(ACCEPT_INPUT);
         for (Event event : listEvent) {
             event.setStartedExecution(true);
-            List<Step> list = map.get(event.getEventId() % totalProcessors);
+            List<Step> list = mapStepType.get(event.getEventId() % totalProcessors);
             list.add(new StepsApprove1CSign(true, event));
         }
     }
 
-    public void addSteps(int totalProcessors, List<Event> listEvent, StepType type) {
+    public void addSteps(StepType stepType, int totalProcessors, List<Event> listEvent, StepType type) {
+        Map<Integer, List<Step>> mapStepType = map.get(stepType);
         for (Event event : listEvent) {
-
-            List<Step> list = map.get(event.getEventId() % totalProcessors);
+            List<Step> list = mapStepType.get(event.getEventId() % totalProcessors);
             switch (type) {
                 case ACCEPT_INPUT:
                     event.setStartedExecution(true);
@@ -69,9 +75,10 @@ public class XDEContainer {
         }
     }
 
-    public void removeDoneSteps(int processor) {
+    public void removeDoneSteps(StepType stepType, int processor) {
+        Map<Integer, List<Step>> mapStepType = map.get(stepType);
         for (int i = 0; i < processor; i++) {
-            List<Step> list = map.get(i);
+            List<Step> list = mapStepType.get(i);
             Iterator<Step> iterator = list.iterator();
             while (iterator.hasNext()) {
                 Step step = iterator.next();
@@ -90,10 +97,22 @@ public class XDEContainer {
         }
     }
 
+    public boolean stepsAreWorking(StepType stepType) {
+        boolean result = false;
+        Map<Integer, List<Step>> mapStepType = map.get(stepType);
+        for (Map.Entry<Integer, List<Step>> entry : mapStepType.entrySet()) {
+            result = result || entry.getValue().size() > 0;
+        }
+        return result;
+    }
+
     public boolean stepsAreWorking() {
         boolean result = false;
-        for (Map.Entry<Integer, List<Step>> entry : map.entrySet()) {
-            result = result || entry.getValue().size() > 0;
+        for (StepType stepType : StepType.values()) {
+            Map<Integer, List<Step>> mapStepType = map.get(stepType);
+            for (Map.Entry<Integer, List<Step>> entry : mapStepType.entrySet()) {
+                result = result || entry.getValue().size() > 0;
+            }
         }
         return result;
     }

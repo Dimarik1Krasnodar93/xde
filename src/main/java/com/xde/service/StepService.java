@@ -4,7 +4,7 @@ import com.xde.enums.StepType;
 import com.xde.model.Event;
 import com.xde.repository.DocInputRepository;
 import com.xde.repository.EventRepository;
-import com.xde.threads.runnableThreads.ThreadContainer;
+import com.xde.threads.runnableThreads.ThreadStepsQueryXDE;
 import com.xde.threads.runnableThreads.ThreadRemoveSteps;
 import com.xde.threads.runnableThreads.ThreadSaverResults;
 import com.xde.xde.ConnectorToXDE;
@@ -27,7 +27,7 @@ public class StepService {
         XDEContainer xdeContainer = connectorToXDE.getXdeContainer();
         Thread[] threadRemoveSteps = new ThreadRemoveSteps[connectorToXDE.getProcessorsCount()];
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
-            threadRemoveSteps[i] = new ThreadRemoveSteps(xdeContainer, i);
+            threadRemoveSteps[i] = new ThreadRemoveSteps(xdeContainer, type, i);
             threadRemoveSteps[i].start();
         }
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
@@ -38,11 +38,11 @@ public class StepService {
             }
         }
         List<Event> list = supplier.get();
-        Thread[] threadContainers = new ThreadContainer[connectorToXDE.getProcessorsCount()];
+        Thread[] threadContainers = new ThreadStepsQueryXDE[connectorToXDE.getProcessorsCount()];
 
-        xdeContainer.addSteps(connectorToXDE.getProcessorsCount(), list, type);
+        xdeContainer.addSteps(type, connectorToXDE.getProcessorsCount(), list, type);
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
-            threadContainers[i] = new ThreadContainer(xdeContainer,
+            threadContainers[i] = new ThreadStepsQueryXDE(type, xdeContainer,
                     i);
             threadContainers[i].start();
         }

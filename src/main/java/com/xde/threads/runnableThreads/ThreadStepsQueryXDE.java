@@ -1,5 +1,6 @@
 package com.xde.threads.runnableThreads;
 
+import com.xde.enums.StepType;
 import com.xde.xde.XDEContainer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,12 +11,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class ThreadContainer extends Thread {
+public class ThreadStepsQueryXDE extends Thread {
+    private StepType stepType;
     private volatile XDEContainer xdeContainer;
     private int processorValue;
 
+
     @Override
     public void run() {
-        xdeContainer.execute(processorValue);
+        xdeContainer.execute(stepType, processorValue);
     }
 }

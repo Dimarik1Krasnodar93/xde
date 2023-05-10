@@ -165,8 +165,8 @@ import java.util.*;
             if (responseEntity == null) {
                 if (!ex.getMessage().contains("запланированные задачи")
                 && !ex.getMessage().contains("недоступна")) {
-                    fatalError = true;
-                    logger.error("--fatal error--");
+                   // fatalError = true;
+                    logger.error("--fatal error--" + ex.getMessage());
                 }
             }
             return Optional.empty();

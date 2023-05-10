@@ -13,7 +13,7 @@ public class ThreadGetEvents extends Thread {
     public void run() {
         while (!interrupted()) {
             eventService.getEvents(id);
-            Thread.sleep(15000000);
+            Thread.sleep(10000);
             if (eventService.isFatalError()) {
                 Thread.currentThread().interrupt();
             }

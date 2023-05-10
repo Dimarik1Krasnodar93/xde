@@ -1,5 +1,6 @@
 package com.xde.controller;
 
+import com.xde.enums.StepType;
 import com.xde.model.steps.Step;
 import com.xde.model.steps.StepsApprove;
 import com.xde.xde.ConnectorToXDE;
@@ -24,7 +25,7 @@ public class StepController {
     ConnectorToXDE connectorToXDE;
     @GetMapping("/getByDocId/{docId}")
     public Step getByDocId(@PathVariable("docId") String docId) {
-        return connectorToXDE.getXdeContainer().getMap()
+        return connectorToXDE.getXdeContainer().getMap().get(StepType.ACCEPT_INPUT)
                 .values()
                 .parallelStream()
                 .flatMap( i -> i.parallelStream())
@@ -36,6 +37,7 @@ public class StepController {
     @GetMapping("/getInStep/{step}")
     public List<Step> getInStep(@PathVariable("step") int step) {
         return connectorToXDE.getXdeContainer().getMap()
+                .get(StepType.ACCEPT_INPUT)
                 .values()
                 .parallelStream()
                 .flatMap( i -> i.parallelStream())
@@ -46,6 +48,7 @@ public class StepController {
     @GetMapping("/getCountInStep/{step}")
     public long getCountInStep(@PathVariable("step") int step) {
         return connectorToXDE.getXdeContainer().getMap()
+                .get(StepType.ACCEPT_INPUT)
                 .values()
                 .parallelStream()
                 .flatMap( i -> i.parallelStream())

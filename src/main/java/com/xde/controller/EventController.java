@@ -24,7 +24,10 @@ public class EventController {
 
     @PostMapping("/getEvents/{id}")
     public Object getData(@PathVariable("id") int id) {
-        eventService.getEvents(id);
+        Thread threadGetEvents = new ThreadGetEvents(eventService, id);
+        Thread threadCreateDocInput = new ThreadCreateDocInput(eventService);
+        threadGetEvents.start();
+        threadCreateDocInput.start();
         return "getData: ok";
     }
 
@@ -47,7 +50,7 @@ public class EventController {
         Thread threadCreateDocInput = new ThreadCreateDocInput(eventService);
         Thread threadUpdateAll = new ThreadUpdateAll(eventService);
         threadGetEvents.start();
-       // threadApproveAll.start();
+        threadApproveAll.start();
         threadCreateDocInput.start();
         threadUpdateAll.start();
     }
