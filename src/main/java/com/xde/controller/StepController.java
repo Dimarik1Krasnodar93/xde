@@ -56,6 +56,14 @@ public class StepController {
                 .count();
     }
 
+    @GetMapping("/getCountInAllSteps")
+    public String getCountInAllStep() {
+        long result = getCountInStep(1) + getCountInStep(2) + getCountInStep(3);
+        return "_step1: " + getCountInStep(1) + "      \n"
+        + "_step2: " + getCountInStep(2) + "\n"
+                + "_step3: " + getCountInStep(3) + "\n";
+    }
+
     @ExceptionHandler
     public ResponseEntity<String> handleException(NoSuchElementException noSuchElementException) {
         return ResponseEntity.badRequest().body(noSuchElementException.getMessage());

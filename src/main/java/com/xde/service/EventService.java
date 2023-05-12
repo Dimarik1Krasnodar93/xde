@@ -11,7 +11,6 @@ import com.xde.repository.DocInputRepository;
 import com.xde.repository.EventRepository;
 import com.xde.threads.runnableThreads.*;
 import com.xde.xde.ConnectorToXDE;
-import com.xde.xde.XDEContainer;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,7 @@ public class EventService {
         int lastMessage = organizationBoxCount.getCount();
         organizationBoxCount.setCount(lastMessage);
         organizationBoxCountService.save(organizationBoxCount);
-       // lastMessage = valueConst;
+       // lastMessage = valueConst;//80830
         Set<Map> set = connectorToXDE.getInputEvents(boxId, lastMessage);
         int maxEvent = saveAllFromXDE(set, organizationBoxCount.getBox());
         if (maxEvent > lastMessage && maxEvent > 0 ) {
@@ -93,6 +92,12 @@ public class EventService {
             for (DocInput docInput : listInDb) {
                 if (event.getDocId().equals(docInput.getIdDoc())) {
                     skipElement = true;
+                    break;
+                }
+                //отладка
+                else {
+                    int e = 5;
+                    continue;
                 }
             }
             if (!skipElement) {
@@ -121,6 +126,9 @@ public class EventService {
     public boolean needWork() {
         return eventRepository.getAllToExecute().size() > 0
                 || connectorToXDE.getXdeContainer().stepsAreWorking();
+    }
+    public int CountEventsToExecute() {
+        return eventRepository.getAllToExecute().size() ;
     }
 
     public boolean needCreate() {

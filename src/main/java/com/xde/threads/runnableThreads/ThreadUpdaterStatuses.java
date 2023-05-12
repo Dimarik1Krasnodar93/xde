@@ -7,6 +7,8 @@ import com.xde.repository.DocInputRepository;
 import com.xde.repository.EventRepository;
 import com.xde.xde.XDEContainer;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ public class ThreadUpdaterStatuses extends Thread {
     private int processorValue;
     private int processorsTotal;
     List<Event> listToUpdate;
+    private static Logger logger = LoggerFactory.getLogger(ThreadUpdaterStatuses.class);
 
     @Override
     public void run() {
@@ -39,6 +42,9 @@ public class ThreadUpdaterStatuses extends Thread {
             }
         }
         if (listToUpdate.size() > 0) {
+            for (DocInput docInput : listToUpdate) {
+                docInput.setIdPac("update_test");
+            }
             docInputRepository.saveAll(listToUpdate);
         }
     }

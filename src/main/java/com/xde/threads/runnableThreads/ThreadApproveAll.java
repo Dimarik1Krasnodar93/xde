@@ -19,7 +19,15 @@ public class ThreadApproveAll extends Thread {
             throw new RuntimeException(e);
         }
         logger.info("+++START APPROVE " + LocalDateTime.now());
+        int count = 0;
         while (!interrupted()) {
+//            count ++;
+//            if (count % 2 == 0) {
+//                int countToExecute = eventService.CountEventsToExecute();
+//                if (countToExecute != 0) {
+//                    logger.info("count " + countToExecute);
+//                }
+//            }
             eventService.approveAll();
             if (!eventService.needWork()) {
                 try {
@@ -30,7 +38,8 @@ public class ThreadApproveAll extends Thread {
                 }
             }
             if (eventService.isFatalError()) {
-                Thread.currentThread().interrupt();
+                logger.error("interrupt thread approve all");
+               // Thread.currentThread().interrupt();
             }
 //            if (!eventService.needWork()) {
 //                logger.info("+++FINISH APPROVE " + LocalDateTime.now());
