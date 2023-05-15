@@ -34,7 +34,7 @@ import java.util.*;
     private XDEContainer xdeContainer;
 
     private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
-    public static final int MAX_COUNT_EVENTS = 1000;
+    public static final int MAX_COUNT_EVENTS = 1500;
     private boolean fatalError = false;
 
     private XDESettingsRepository xdeSettingsRepository;
