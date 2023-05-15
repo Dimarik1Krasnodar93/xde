@@ -27,7 +27,7 @@ import java.util.*;
 @Component
 @Getter
  public class ConnectorToXDE {
-    private int processorsCount = 10;
+    private int processorsCount = 150;
     private XDESettings xdeSettings;
     private String token;
     private static String bearerToken;
@@ -101,37 +101,40 @@ import java.util.*;
         headers.add("Authorization", bearerToken);
         Optional<ResponseEntity<Set>> optResponseEntity = executeXdeQuery(HttpMethod.POST, headers, map,
                 UrlQueries.getUrlHistory(), Set.class, String.class);
-        return (Set<Map>) optResponseEntity.orElseThrow().getBody();
+        var temp = optResponseEntity.orElse(null);
+        return temp != null ? temp.getBody() : new HashSet<>();
     }
 
     public void executeStep(Step step) {
-        if (!step.needToWaiting() && !step.getDone()) {
-            Map<String, Object> parameters = step.getParameters();
-            HttpMethod httpMethod = step.getHttpMethod();
-            HttpHeaders headers = step.getHeaders();
-            if (step.needAuthorization()) {
-                headers.add("Authorization", bearerToken);
-            }
-            Optional<ResponseEntity<String>> optResponseEntity = Optional.empty();
-            try {
-                Class requestClass = parameters.containsKey("body") ? byte[].class : String.class;
-                optResponseEntity = executeXdeQuery(httpMethod, headers, parameters,
-                        step.getUrlRequest(), String.class, requestClass);
-                if (!optResponseEntity.isEmpty()) {
-                    if (optResponseEntity.get().getStatusCode() == HttpStatus.OK
-                            && !optResponseEntity.get().getBody().contains("\"Results\":null")) {
-                        step.updateResultFromResponseEntity(optResponseEntity.get());
-                        step.incrementStep();
-                    } else {
-                        step.setError(optResponseEntity.get().getStatusCode().toString());
-                        logger.error(String.format("ERROR %s step %d docId %s",
-                                optResponseEntity.get().getStatusCode(), step.getStep(), step.getEvent().getDocId()));
-                    }
+        synchronized (step) {
+            if (!step.needToWaiting() && !step.getDone()) {
+                Map<String, Object> parameters = step.getParameters();
+                HttpMethod httpMethod = step.getHttpMethod();
+                HttpHeaders headers = step.getHeaders();
+                if (step.needAuthorization()) {
+                    headers.add("Authorization", bearerToken);
                 }
-            } catch (Exception ex) {
-                logger.error(String.format("ERROR %s step %d docId %s",
-                        optResponseEntity.get().getStatusCode(), step.getStep(), step.getEvent().getDocId()));
-                step.setError(String.format("%s %s",optResponseEntity.orElseThrow().getStatusCode(), ex.getMessage()));
+                Optional<ResponseEntity<String>> optResponseEntity = Optional.empty();
+                try {
+                    Class requestClass = parameters.containsKey("body") ? byte[].class : String.class;
+                    optResponseEntity = executeXdeQuery(httpMethod, headers, parameters,
+                            step.getUrlRequest(), String.class, requestClass);
+                    if (!optResponseEntity.isEmpty()) {
+                        if (optResponseEntity.get().getStatusCode() == HttpStatus.OK
+                                && !optResponseEntity.get().getBody().contains("\"Results\":null")) {
+                            step.updateResultFromResponseEntity(optResponseEntity.get());
+                            step.incrementStep();
+                        } else {
+                            step.setError(optResponseEntity.get().getStatusCode().toString());
+                            logger.error(String.format("ERROR %s step %d docId %s",
+                                    optResponseEntity.get().getStatusCode(), step.getStep(), step.getEvent().getDocId()));
+                        }
+                    }
+                } catch (Exception ex) {
+                    logger.error(String.format("ERROR %s step %d docId %s",
+                            optResponseEntity.get().getStatusCode(), step.getStep(), step.getEvent().getDocId()));
+                    step.setError(String.format("%s %s", optResponseEntity.orElseThrow().getStatusCode(), ex.getMessage()));
+                }
             }
         }
     }
@@ -161,7 +164,7 @@ import java.util.*;
         try {
             responseEntity = restTemplate.exchange(urlRequest, httpMethod, request, classNameResponse);
         } catch (Exception ex) {
-            logger.error(ex.getMessage());
+            logger.error(ex.getMessage() + " request " + urlRequest);
             if (responseEntity == null) {
                 if (!ex.getMessage().contains("запланированные задачи")
                 && !ex.getMessage().contains("недоступна")) {

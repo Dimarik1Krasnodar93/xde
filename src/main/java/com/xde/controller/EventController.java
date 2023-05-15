@@ -21,6 +21,7 @@ public class EventController {
     private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
 
     EventService eventService;
+    StepController stepController;
 
     @PostMapping("/getEvents/{id}")
     public Object getData(@PathVariable("id") int id) {
@@ -53,5 +54,17 @@ public class EventController {
         threadApproveAll.start();
         threadCreateDocInput.start();
         threadUpdateAll.start();
+        Thread threadLog = new Thread(() -> {
+            while (!Thread.interrupted()) {
+                logger.info(stepController.getCountInAllStep());
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        threadLog.start();
+
     }
 }

@@ -31,7 +31,7 @@ import java.util.Map;
  */
 @NoArgsConstructor
 public class StepsApprove1CSign implements Step {
-    public static final int SECONDS_IGNORE = 5;
+    public static final int SECONDS_IGNORE = 8;
     public static final int TOTAL_STEPS = 4;
 
     @Id

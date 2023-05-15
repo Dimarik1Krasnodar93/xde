@@ -79,11 +79,13 @@ public class XDEContainer {
         Map<Integer, List<Step>> mapStepType = map.get(stepType);
         for (int i = 0; i < processor; i++) {
             List<Step> list = mapStepType.get(i);
-            Iterator<Step> iterator = list.iterator();
-            while (iterator.hasNext()) {
-                Step step = iterator.next();
-                if (step.getDone() && step.getSavedResults()) {
-                    iterator.remove();
+            synchronized (list) {
+                Iterator<Step> iterator = list.iterator();
+                while (iterator.hasNext()) {
+                    Step step = iterator.next();
+                    if (step.getDone() && step.getSavedResults()) {
+                        iterator.remove();
+                    }
                 }
             }
         }
