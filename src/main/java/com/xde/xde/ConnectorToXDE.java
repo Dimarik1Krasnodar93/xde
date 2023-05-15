@@ -27,7 +27,7 @@ import java.util.*;
 @Component
 @Getter
  public class ConnectorToXDE {
-    private int processorsCount = 1000;
+    private int processorsCount = 1100;
     private XDESettings xdeSettings;
     private String token;
     private static String bearerToken;
