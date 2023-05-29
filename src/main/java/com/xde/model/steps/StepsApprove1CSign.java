@@ -31,7 +31,6 @@ import java.util.Map;
  */
 @NoArgsConstructor
 public class StepsApprove1CSign implements Step {
-    public static final int SECONDS_IGNORE = 8;
     public static final int TOTAL_STEPS = 4;
 
     @Id
@@ -58,7 +57,9 @@ public class StepsApprove1CSign implements Step {
 
     @Transient
     private StepResult stepResult;
-    private LocalDateTime lastXdeTime = LocalDateTime.now().minusSeconds(SECONDS_IGNORE);
+    @Transient
+    private int countErrors;
+    private LocalDateTime lastXdeTime = LocalDateTime.now();
 
 
     public StepsApprove1CSign(boolean approve, Event event) {
@@ -86,6 +87,7 @@ public class StepsApprove1CSign implements Step {
     @Override
     public void incrementStep() {
         lastXdeTime = LocalDateTime.now();
+        countErrors = 0;
         if (!fatalException && ++step > TOTAL_STEPS) {
             done = true;
         }
@@ -131,8 +133,7 @@ public class StepsApprove1CSign implements Step {
     @Override
     public boolean needToWaiting() {
         return fatalException ? LocalDateTime.now()
-                .isBefore(lastXdeTime.plusSeconds( 2 * SECONDS_IGNORE)) : LocalDateTime.now()
-                .isBefore(lastXdeTime.plusSeconds(step != 2 ? SECONDS_IGNORE : 2 * SECONDS_IGNORE)) ;
+                .isBefore(lastXdeTime.plusSeconds( (int) Math.pow(2, countErrors))) : false;
     }
 
     @Override
@@ -223,6 +224,7 @@ public class StepsApprove1CSign implements Step {
 
     @Override
     public void setError(String message) {
+        countErrors++;
         fatalException = true;
         exceptionMessage = message;
         lastXdeTime = LocalDateTime.now();

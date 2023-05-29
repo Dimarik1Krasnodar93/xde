@@ -36,6 +36,7 @@ public class EventService {
     public boolean isFatalError() {
         return connectorToXDE.isFatalError();
     }
+
     public String getEvents(int id) {
        // long timeStart = System.currentTimeMillis();
         OrganizationBoxCount organizationBoxCount = organizationBoxCountService.findById(id);
