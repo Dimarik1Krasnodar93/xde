@@ -129,6 +129,8 @@ import java.util.*;
                             logger.error(String.format("ERROR %s step %d docId %s",
                                     optResponseEntity.get().getStatusCode(), step.getStep(), step.getEvent().getDocId()));
                         }
+                    } else {
+                        step.setError("empty body");
                     }
                 } catch (Exception ex) {
                     logger.error(String.format("ERROR %s step %d docId %s",

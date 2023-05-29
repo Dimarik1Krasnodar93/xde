@@ -7,6 +7,8 @@ import com.xde.threads.runnableThreads.ThreadGetEvents;
 import com.xde.threads.runnableThreads.ThreadUpdateAll;
 import com.xde.xde.ConnectorToXDE;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -17,11 +19,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/event")
 @AllArgsConstructor
+@Slf4j
 public class EventController {
     private static Logger logger = LoggerFactory.getLogger(ConnectorToXDE.class);
 
     EventService eventService;
     StepController stepController;
+
 
     @PostMapping("/getEvents/{id}")
     public Object getData(@PathVariable("id") int id) {
