@@ -7,11 +7,17 @@ import lombok.AllArgsConstructor;
 /**
  * Контейнер потоков для удаления выполненных задач
  * */
-@AllArgsConstructor
 public class ThreadRemoveSteps extends Thread {
     private volatile XDEContainer xdeContainer;
     private StepType stepType;
     private int processorValue;
+
+    public ThreadRemoveSteps(XDEContainer xdeContainer, StepType stepType, int processorValue, String name) {
+        this.xdeContainer = xdeContainer;
+        this.stepType = stepType;
+        this.processorValue = processorValue;
+        this.setName(name);
+    }
 
     @Override
     public void run() {

@@ -6,11 +6,17 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@AllArgsConstructor
 public class ThreadGetEvents extends Thread {
     private EventService eventService;
     private int id;
     private static Logger logger = LoggerFactory.getLogger(ThreadGetEvents.class);
+
+    public ThreadGetEvents(EventService eventService, int id, String name) {
+        this.setName(name);
+        this.eventService = eventService;
+        this.id = id;
+    }
+
     @SneakyThrows
     @Override
     public void run() {
@@ -24,4 +30,6 @@ public class ThreadGetEvents extends Thread {
             }
         }
     }
+
+
 }

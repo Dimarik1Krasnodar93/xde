@@ -17,10 +17,21 @@ import java.util.List;
 public class ThreadUpdaterStatuses extends Thread {
     private EventRepository eventRepository;
     private DocInputRepository docInputRepository;
+
     private int processorValue;
     private int processorsTotal;
-    List<Event> listToUpdate;
+    private List<Event> listToUpdate;
     private static Logger logger = LoggerFactory.getLogger(ThreadUpdaterStatuses.class);
+
+    public ThreadUpdaterStatuses(EventRepository eventRepository, DocInputRepository docInputRepository,
+                                 int processorValue, int processorsTotal, List<Event> listToUpdate, String name) {
+        this.eventRepository = eventRepository;
+        this.docInputRepository = docInputRepository;
+        this.processorValue = processorValue;
+        this.processorsTotal = processorsTotal;
+        this.listToUpdate = listToUpdate;
+        this.setName(name);
+    }
 
     @Override
     public void run() {

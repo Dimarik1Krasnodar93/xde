@@ -27,7 +27,8 @@ public class StepService {
         XDEContainer xdeContainer = connectorToXDE.getXdeContainer();
         Thread[] threadRemoveSteps = new ThreadRemoveSteps[connectorToXDE.getProcessorsCount()];
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
-            threadRemoveSteps[i] = new ThreadRemoveSteps(xdeContainer, type, i);
+            threadRemoveSteps[i] = new ThreadRemoveSteps(xdeContainer, type,
+                    i, String.format("t_RemoveSteps_%d", i));
             threadRemoveSteps[i].start();
         }
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
@@ -43,7 +44,7 @@ public class StepService {
         xdeContainer.addSteps(type, connectorToXDE.getProcessorsCount(), list, type);
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
             threadContainers[i] = new ThreadStepsQueryXDE(type, xdeContainer,
-                    i);
+                    i, String.format("t_Containers_%s_%d", type, i));
             threadContainers[i].start();
         }
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
@@ -56,7 +57,7 @@ public class StepService {
         Thread[] threadSaver = new ThreadSaverResults[connectorToXDE.getProcessorsCount()];
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
             threadSaver[i] = new ThreadSaverResults(xdeContainer,
-                    i, docInputRepository);
+                    i, docInputRepository, String.format("t_SaverResults_%d", i));
             threadSaver[i].start();
         }
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {

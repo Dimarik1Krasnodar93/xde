@@ -6,10 +6,15 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@AllArgsConstructor
 public class ThreadUpdateAll extends Thread {
     private EventService eventService;
     private static Logger logger = LoggerFactory.getLogger(ThreadUpdateAll.class);
+
+    public ThreadUpdateAll(EventService eventService, String name) {
+        this.eventService = eventService;
+        this.setName(name);
+    }
+
     @SneakyThrows
     @Override
     public void run() {

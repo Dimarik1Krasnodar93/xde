@@ -29,8 +29,8 @@ public class EventController {
 
     @PostMapping("/getEvents/{id}")
     public Object getData(@PathVariable("id") int id) {
-        Thread threadGetEvents = new ThreadGetEvents(eventService, id);
-        Thread threadCreateDocInput = new ThreadCreateDocInput(eventService);
+        Thread threadGetEvents = new ThreadGetEvents(eventService , id, "t_getEvents");
+        Thread threadCreateDocInput = new ThreadCreateDocInput(eventService, "threadCreateDocInput");
         threadGetEvents.start();
         threadCreateDocInput.start();
         return "getData: ok";
@@ -50,10 +50,10 @@ public class EventController {
 
     @PostMapping("/getAllAndApprove/{id}")
     public void getAndApprove(@PathVariable("id") int id) throws InterruptedException {
-        Thread threadGetEvents = new ThreadGetEvents(eventService, id);
-        Thread threadApproveAll = new ThreadApproveAll(eventService);
-        Thread threadCreateDocInput = new ThreadCreateDocInput(eventService);
-        Thread threadUpdateAll = new ThreadUpdateAll(eventService);
+        Thread threadGetEvents = new ThreadGetEvents(eventService, id, "t_getEvents");
+        Thread threadApproveAll = new ThreadApproveAll(eventService, "t_ApproveAll");
+        Thread threadCreateDocInput = new ThreadCreateDocInput(eventService, "t_cr_DocI");
+        Thread threadUpdateAll = new ThreadUpdateAll(eventService, "t_UpdateAll");
         threadGetEvents.start();
         threadApproveAll.start();
         threadCreateDocInput.start();

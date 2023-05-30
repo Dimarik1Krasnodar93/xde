@@ -61,7 +61,8 @@ public class EventService {
         List<Event> eventList = eventRepository.findAllInIAndNullData();
         ThreadLoaderArchive[] threadLoaderArchives = new ThreadLoaderArchive[connectorToXDE.getProcessorsCount()];
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
-            threadLoaderArchives[i] = new ThreadLoaderArchive(connectorToXDE.getXdeContainer(), i, eventList);
+            threadLoaderArchives[i] = new ThreadLoaderArchive(connectorToXDE.getXdeContainer(),
+                    i, eventList, String.format("t_LoaderArchives_%d" , i));
             threadLoaderArchives[i].start();
         }
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
@@ -113,7 +114,8 @@ public class EventService {
         Thread[] threadUpdaterStatuses = new ThreadUpdaterStatuses[connectorToXDE.getProcessorsCount()];
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
             threadUpdaterStatuses[i] = new ThreadUpdaterStatuses(eventRepository,
-                    docInputRepository, i, connectorToXDE.getProcessorsCount(), list);
+                    docInputRepository, i, connectorToXDE.getProcessorsCount(), list,
+                    String.format("threadUpdaterStatuses_%d", i));
             threadUpdaterStatuses[i].start();
         }
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {

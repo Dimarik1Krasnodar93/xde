@@ -14,14 +14,18 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-@AllArgsConstructor
 public class ThreadSaverResults extends Thread {
     private XDEContainer xdeContainer;
     private int processorValue;
 
     private DocInputRepository docInputRepository;
 
-
+    public ThreadSaverResults(XDEContainer xdeContainer, int processorValue, DocInputRepository docInputRepository, String name) {
+        this.xdeContainer = xdeContainer;
+        this.processorValue = processorValue;
+        this.docInputRepository = docInputRepository;
+        this.setName(name);
+    }
 
     @Override
     public void run() {

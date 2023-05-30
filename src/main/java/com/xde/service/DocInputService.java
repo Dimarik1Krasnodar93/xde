@@ -25,7 +25,7 @@ public class DocInputService {
         XDEContainer xdeContainer = connectorToXDE.getXdeContainer();
         ThreadRemoveSteps[] threadRemoveSteps = new ThreadRemoveSteps[connectorToXDE.getProcessorsCount()];
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
-            threadRemoveSteps[i] = new ThreadRemoveSteps(xdeContainer, StepType.CREATE_INPUT, i);
+            threadRemoveSteps[i] = new ThreadRemoveSteps(xdeContainer, StepType.CREATE_INPUT, i, "t_RemoveSteps" + i);
             threadRemoveSteps[i].start();
         }
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
@@ -40,7 +40,7 @@ public class DocInputService {
         xdeContainer.addStepsApprove(connectorToXDE.getProcessorsCount(), listApprove);
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {
             threadContainers[i] = new ThreadStepsQueryXDE(StepType.CREATE_INPUT, xdeContainer,
-                    i);
+                    i, String.format("t_%s_%d", StepType.CREATE_INPUT, i) );
             threadContainers[i].start();
         }
         for (int i = 0; i < connectorToXDE.getProcessorsCount(); i++) {

@@ -12,6 +12,12 @@ import java.time.LocalDateTime;
 public class ThreadCreateDocInput extends Thread {
     private EventService eventService;
     private static Logger logger = LoggerFactory.getLogger(ThreadCreateDocInput.class);
+
+    public ThreadCreateDocInput(EventService eventService, String name) {
+        this.eventService = eventService;
+        this.setName(name);
+    }
+
     @SneakyThrows
     @Override
     public void run() {

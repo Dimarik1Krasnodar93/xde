@@ -61,7 +61,8 @@ public class StepController {
         long result = getCountInStep(1) + getCountInStep(2) + getCountInStep(3);
         return "_step1: " + getCountInStep(1) + "      \n"
         + "_step2: " + getCountInStep(2) + "\n"
-                + "_step3: " + getCountInStep(3) + "\n";
+                + "_step3: " + getCountInStep(3) + "\n"
+                + "_step4: " + getCountInStep(4) + "\n";
     }
 
     @ExceptionHandler

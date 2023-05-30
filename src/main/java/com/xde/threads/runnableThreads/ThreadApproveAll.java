@@ -7,10 +7,15 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
 public class ThreadApproveAll extends Thread {
     private EventService eventService;
     private static Logger logger = LoggerFactory.getLogger(ThreadApproveAll.class);
+
+    public ThreadApproveAll(EventService eventService, String name) {
+        this.eventService = eventService;
+        this.setName(name);
+    }
+
     @Override
     public void run() {
         try {
